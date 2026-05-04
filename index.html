@@ -205,6 +205,7 @@ input[type="file"] { display:none; }
         <div style="font-size:14px;font-weight:600;margin:12px 0 10px;">資料備份</div>
         <button class="exp-btn" id="btn-backup">📦 匯出備份（JSON）</button>
         <label class="exp-btn" style="cursor:pointer;">📥 還原備份（JSON）<input type="file" id="restore-inp" accept=".json"></label>
+        <button class="exp-btn" id="btn-reset" style="color:#C0392B; border-color:#F5B7B1; background:#FDEDEC; margin-top:8px;">🗑️ 清空所有資料 (變空白)</button>
       </div>
     </div>
   </div>
@@ -936,29 +937,20 @@ document.getElementById('restore-inp').addEventListener('change',function(){
   };r.readAsText(f);this.value='';
 });
 
+document.getElementById('btn-reset').addEventListener('click',function(){
+  dlg('警告：清空所有資料','確定要刪除所有缺失、巡檢與驗收記錄嗎？此動作無法復原！','確定清空','#C0392B',function(){
+    localStorage.clear();
+    location.reload();
+  });
+});
+
 // ══════════════════════════════
 // 初始化
 // ══════════════════════════════
 rebuildDFT();rebuildSFT();rebuildMFT();updateDExp();syncMRes();syncSRes();
 switchMod('defect');
 
-// 自動讀取同資料夾下的備份檔
-fetch('工地備份_20260504.json')
-  .then(function(res){ if(res.ok) return res.json(); throw new Error(); })
-  .then(function(data){
-    if(defects.length === 0 && safetyLogs.length === 0 && matLogs.length === 0) {
-      if(data.defects)defects=data.defects;
-      if(data.safetyLogs)safetyLogs=data.safetyLogs;
-      if(data.matLogs)matLogs=data.matLogs;
-      if(data.dTypes){dTypes=data.dTypes;saveDT();}
-      if(data.sTypes){sTypes=data.sTypes;saveST();}
-      if(data.mTypes){mTypes=data.mTypes;saveMT();}
-      saveD();saveS();saveM();
-      renderDList();
-      toast('✅ 已自動讀取同資料夾備份');
-    }
-  })
-  .catch(function(e){ console.log('無備份檔或讀取失敗'); });
+// 自動讀取備份功能已移除，讓系統預設保持空白。
 </script>
 </body>
 </html>
