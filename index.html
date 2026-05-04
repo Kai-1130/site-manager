@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>工地管理</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f2f2f7; }
+.app { max-width: 480px; margin: 0 auto; padding: 12px; }
+.header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.logo { width: 38px; height: 38px; background: #185FA5; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.module-bar { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 14px; }
+.module-btn { padding: 10px 4px; border: 2px solid #ddd; border-radius: 12px; background: #fff; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; color: #666; font-family: inherit; }
+.module-btn.mod-d { border-color:#185FA5; background:#185FA5; color:#fff; }
+.module-btn.mod-s { border-color:#E67E22; background:#E67E22; color:#fff; }
+.module-btn.mod-m { border-color:#27AE60; background:#27AE60; color:#fff; }
+.tab-bar { display: flex; gap: 6px; margin-bottom: 16px; }
+.tab { flex:1; padding:9px 4px; border:1px solid #ccc; border-radius:10px; background:#fff; font-size:12px; cursor:pointer; text-align:center; color:#666; font-family:inherit; }
+.tab.td { background:#185FA5; color:#fff; border-color:#185FA5; }
+.tab.ts { background:#E67E22; color:#fff; border-color:#E67E22; }
+.tab.tm { background:#27AE60; color:#fff; border-color:#27AE60; }
+.section { display:none; }
+.card { background:#fff; border-radius:14px; padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.07); }
+.field { margin-bottom:13px; }
+.field label { display:block; font-size:12px; color:#666; margin-bottom:5px; font-weight:500; }
+.field input,.field textarea,.field select { width:100%; padding:9px 11px; border:1px solid #ddd; border-radius:10px; font-size:15px; background:#fff; color:#111; -webkit-appearance:none; appearance:none; font-family:inherit; }
+.field textarea { height:64px; resize:none; }
+.type-chips { display:flex; flex-wrap:wrap; gap:7px; margin-bottom:6px; }
+.chip { display:inline-flex; align-items:center; gap:3px; padding:5px 11px; border-radius:999px; font-size:13px; background:#f0f0f0; border:1px solid #ddd; color:#444; cursor:pointer; user-select:none; }
+.chip.cd { background:#185FA5; color:#fff; border-color:#185FA5; }
+.chip.cs { background:#E67E22; color:#fff; border-color:#E67E22; }
+.chip.cm { background:#27AE60; color:#fff; border-color:#27AE60; }
+.chip-x { font-size:15px; line-height:1; color:#aaa; cursor:pointer; padding:0 2px; flex-shrink:0; }
+.chip.cd .chip-x,.chip.cs .chip-x,.chip.cm .chip-x { color:rgba(255,255,255,0.75); }
+.type-add-row { display:flex; gap:6px; margin-top:6px; }
+.type-add-row input { flex:1; padding:7px 10px; border:1px solid #ddd; border-radius:8px; font-size:13px; font-family:inherit; }
+.type-add-row button { padding:7px 12px; border:1px solid #185FA5; border-radius:8px; background:none; color:#185FA5; font-size:13px; cursor:pointer; font-family:inherit; white-space:nowrap; }
+.pri-tags { display:flex; gap:6px; }
+.pri-tag { flex:1; padding:8px 4px; border-radius:10px; border:2px solid #ddd; text-align:center; cursor:pointer; font-size:12px; font-weight:600; background:#fff; }
+.sel-urgent { border-color:#C0392B; background:#FDECEA; color:#C0392B; }
+.sel-high { border-color:#E67E22; background:#FEF3E2; color:#E67E22; }
+.sel-normal { border-color:#27AE60; background:#EAF5EA; color:#27AE60; }
+.sel-low { border-color:#aaa; background:#F5F5F5; color:#888; }
+.photo-btn { width:100%; height:76px; border:1.5px dashed #bbb; border-radius:10px; background:#f7f7f7; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:5px; cursor:pointer; color:#888; font-size:13px; }
+.photo-grid { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.photo-thumb { width:88px; height:88px; border-radius:10px; overflow:hidden; border:1px solid #ddd; cursor:pointer; flex-shrink:0; }
+.photo-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+.submit-btn { width:100%; padding:13px; color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:500; cursor:pointer; margin-top:4px; font-family:inherit; }
+.btn-d { background:#185FA5; } .btn-s { background:#E67E22; } .btn-m { background:#27AE60; }
+.rcard { background:#fff; border-radius:14px; padding:13px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.07); border-left:4px solid #ddd; }
+.rcard.pri-urgent { border-left-color:#C0392B; }
+.rcard.pri-high { border-left-color:#E67E22; }
+.rcard.pri-normal { border-left-color:#27AE60; }
+.rcard.pri-low { border-left-color:#bbb; }
+.rcard.cs-card { border-left-color:#E67E22; }
+.rcard.cm-card { border-left-color:#27AE60; }
+.rhdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; gap:8px; }
+.rtitle { font-size:15px; font-weight:600; color:#111; }
+.badge { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:600; white-space:nowrap; flex-shrink:0; }
+.bp { background:#FAEEDA; color:#854F0B; }
+.bd { background:#E6F1FB; color:#185FA5; }
+.bpass { background:#EAF5EA; color:#27AE60; }
+.bfail { background:#FDECEA; color:#C0392B; }
+.bpart { background:#FEF3E2; color:#E67E22; }
+.pri-badge { display:inline-block; padding:2px 7px; border-radius:999px; font-size:11px; font-weight:600; margin-right:4px; }
+.rmeta { font-size:12px; color:#888; margin-top:2px; }
+.photo-row { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 8px; }
+.pw { position:relative; width:66px; height:66px; flex-shrink:0; }
+.pw img { width:66px; height:66px; object-fit:cover; border-radius:8px; border:1px solid #ddd; display:block; cursor:pointer; }
+.del-ph { position:absolute; top:-6px; right:-6px; width:20px; height:20px; background:#C0392B; color:#fff; border:none; border-radius:50%; font-size:13px; cursor:pointer; display:flex; align-items:center; justify-content:center; z-index:2; }
+.ar { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+.abtn { flex:1; min-width:50px; padding:8px 4px; font-size:11px; border:1px solid #ddd; border-radius:8px; background:#f5f5f5; cursor:pointer; color:#333; text-align:center; font-weight:600; font-family:inherit; }
+.abtn:active { opacity:0.7; }
+.filter-row { display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap; }
+.filter-row select { flex:1; min-width:80px; padding:8px 6px; border:1px solid #ddd; border-radius:10px; font-size:12px; background:#fff; color:#222; -webkit-appearance:none; appearance:none; }
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:14px; }
+.stat { background:#fff; border-radius:12px; padding:12px 8px; text-align:center; box-shadow:0 1px 4px rgba(0,0,0,0.06); }
+.stat-num { font-size:24px; font-weight:700; color:#111; }
+.stat-label { font-size:11px; color:#888; margin-top:2px; }
+.exp-btn { width:100%; padding:13px; margin-bottom:10px; border:1px solid #ddd; border-radius:12px; background:#fff; font-size:14px; cursor:pointer; color:#222; display:flex; align-items:center; justify-content:center; gap:8px; font-weight:500; box-shadow:0 1px 4px rgba(0,0,0,0.06); font-family:inherit; }
+.exp-filter { display:flex; gap:6px; margin-bottom:10px; }
+.exp-filter select { flex:1; padding:8px 10px; border:1px solid #ddd; border-radius:10px; font-size:13px; background:#fff; -webkit-appearance:none; appearance:none; }
+.empty { text-align:center; padding:40px 0; color:#aaa; font-size:14px; }
+.phlbl { font-size:12px; font-weight:600; margin:6px 0 4px; }
+/* 編輯面板 */
+.ep { background:#f7f7f7; border-radius:10px; padding:12px; margin-top:10px; }
+.ep-lbl { font-size:11px; color:#666; display:block; margin-bottom:4px; font-weight:500; margin-top:8px; }
+.ep-lbl:first-child { margin-top:0; }
+.ep input,.ep select { width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:#fff; margin-bottom:0; font-family:inherit; -webkit-appearance:none; appearance:none; color:#111; }
+.ep textarea { width:100%; padding:8px 10px; border:1px solid #ddd; border-radius:8px; font-size:14px; background:#fff; font-family:inherit; color:#111; height:60px; resize:none; }
+.ep-pri { display:flex; gap:5px; margin-top:0; }
+.ep-pri-btn { flex:1; padding:7px 2px; border-radius:8px; border:2px solid #ddd; text-align:center; cursor:pointer; font-size:11px; font-weight:600; background:#fff; color:#888; }
+.ep-add-ph { display:block; width:100%; padding:8px; border:1px dashed #bbb; border-radius:8px; text-align:center; font-size:12px; color:#888; cursor:pointer; margin-top:8px; }
+.ep-save { width:100%; padding:10px; color:#fff; border:none; border-radius:8px; font-size:14px; cursor:pointer; font-weight:500; font-family:inherit; margin-top:10px; }
+.result-row { display:flex; gap:8px; }
+.rbtn { flex:1; padding:10px 4px; border:2px solid #ddd; border-radius:10px; text-align:center; cursor:pointer; font-size:12px; font-weight:600; background:#fff; color:#666; font-family:inherit; }
+.r-pass { border-color:#27AE60; background:#EAF5EA; color:#27AE60; }
+.r-fail { border-color:#C0392B; background:#FDECEA; color:#C0392B; }
+.r-accept { border-color:#27AE60; background:#EAF5EA; color:#27AE60; }
+.r-partial { border-color:#E67E22; background:#FEF3E2; color:#E67E22; }
+.r-reject { border-color:#C0392B; background:#FDECEA; color:#C0392B; }
+.lb { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.92); z-index:1000; flex-direction:column; align-items:center; justify-content:center; }
+.lb.open { display:flex; }
+.lb img { max-width:94vw; max-height:80vh; object-fit:contain; border-radius:6px; }
+.lb-x { position:absolute; top:14px; right:18px; background:none; border:none; color:#fff; font-size:32px; cursor:pointer; }
+.lb-nav { display:flex; gap:24px; margin-top:14px; }
+.lb-nav button { background:rgba(255,255,255,0.15); border:none; color:#fff; font-size:24px; padding:8px 18px; border-radius:8px; cursor:pointer; }
+.lb-c { color:#ccc; font-size:12px; margin-top:8px; }
+.dlg { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center; }
+.dlg.open { display:flex; }
+.dlg-box { background:#fff; border-radius:16px; padding:24px 20px 16px; max-width:300px; width:90%; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.18); }
+.dlg-title { font-size:16px; font-weight:700; color:#111; margin-bottom:8px; }
+.dlg-msg { font-size:13px; color:#666; margin-bottom:20px; line-height:1.6; }
+.dlg-btns { display:flex; gap:10px; }
+.dlg-btn { flex:1; padding:11px; border:none; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; }
+.dlg-cancel { background:#f0f0f0; color:#444; }
+.dlg-ok { color:#fff; }
+.toast { position:fixed; bottom:28px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); color:#fff; padding:10px 20px; border-radius:20px; font-size:13px; z-index:999; opacity:0; transition:opacity 0.3s; pointer-events:none; white-space:nowrap; }
+.toast.show { opacity:1; }
+input[type="file"] { display:none; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">
+      <svg width="22" height="22" fill="none" stroke="#fff" stroke-width="2" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/><path d="M9 12h6M9 16h4"/></svg>
+    </div>
+    <div>
+      <div style="font-size:16px;font-weight:700;color:#111;" id="proj-display">工地管理</div>
+      <div style="font-size:11px;color:#888;" id="date-display"></div>
+    </div>
+  </div>
+
+  <div class="module-bar">
+    <button class="module-btn mod-d" id="mod-defect">📋 缺失管理</button>
+    <button class="module-btn" id="mod-safety">🦺 工安巡檢</button>
+    <button class="module-btn" id="mod-material">📦 材料驗收</button>
+  </div>
+
+  <!-- ══ 缺失管理 ══ -->
+  <div id="module-defect">
+    <div class="tab-bar">
+      <div class="tab td" id="dt-list-btn">缺失清單</div>
+      <div class="tab" id="dt-add-btn">新增缺失</div>
+      <div class="tab" id="dt-exp-btn">匯出報告</div>
+    </div>
+    <div class="section" id="dt-list">
+      <div class="stats">
+        <div class="stat"><div class="stat-num" id="d-total">0</div><div class="stat-label">總計</div></div>
+        <div class="stat"><div class="stat-num" style="color:#854F0B" id="d-pending">0</div><div class="stat-label">待改善</div></div>
+        <div class="stat"><div class="stat-num" style="color:#185FA5" id="d-done">0</div><div class="stat-label">已完成</div></div>
+      </div>
+      <div class="filter-row">
+        <select id="d-fs"><option value="">全部狀態</option><option value="pending">待改善</option><option value="done">驗收完成</option></select>
+        <select id="d-fp"><option value="">全部緊急度</option><option value="urgent">🔴 緊急</option><option value="high">🟠 高</option><option value="normal">🟢 一般</option><option value="low">⚪ 低</option></select>
+        <select id="d-ft"><option value="">全部類型</option></select>
+      </div>
+      <div id="defect-list"></div>
+    </div>
+    <div class="section" id="dt-add">
+      <div class="card">
+        <div class="field"><label>缺失位置</label><input type="text" id="d-loc" placeholder="例：3F 北側走廊"></div>
+        <div class="field">
+          <label>缺失類型 <span style="font-size:11px;color:#aaa;">（點 × 刪除）</span></label>
+          <div class="type-chips" id="d-chips"></div>
+          <div class="type-add-row"><input type="text" id="d-chip-inp" placeholder="新增自訂類型"><button id="d-chip-add">新增</button></div>
+        </div>
+        <div class="field">
+          <label>優先緩急</label>
+          <div class="pri-tags" id="d-pri">
+            <div class="pri-tag sel-urgent" data-p="urgent">🔴 緊急</div>
+            <div class="pri-tag" data-p="high">🟠 高</div>
+            <div class="pri-tag" data-p="normal">🟢 一般</div>
+            <div class="pri-tag" data-p="low">⚪ 低</div>
+          </div>
+        </div>
+        <div class="field"><label>備註</label><textarea id="d-desc" placeholder="備註說明..."></textarea></div>
+        <div class="field">
+          <label>現況照片（可多選，自動標記日期）</label>
+          <div class="photo-btn" id="d-ph-btn"><svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>點擊拍照 / 一次選多張</div>
+          <input type="file" id="d-file" accept="image/*" multiple>
+          <div class="photo-grid" id="d-preview"></div>
+        </div>
+        <button class="submit-btn btn-d" id="d-submit">新增缺失記錄</button>
+      </div>
+    </div>
+    <div class="section" id="dt-exp">
+      <div class="card">
+        <div style="font-size:13px;font-weight:600;margin-bottom:8px;">篩選匯出範圍</div>
+        <div class="exp-filter">
+          <select id="d-es"><option value="">全部狀態</option><option value="pending">僅待改善</option><option value="done">僅驗收完成</option></select>
+          <select id="d-ep"><option value="">全部緊急度</option><option value="urgent">🔴 緊急</option><option value="high">🟠 高</option><option value="normal">🟢 一般</option><option value="low">⚪ 低</option></select>
+        </div>
+        <div id="d-ecount" style="font-size:12px;color:#888;margin-bottom:12px;"></div>
+        <button class="exp-btn" id="d-word"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>匯出 Word（含照片，A4）</button>
+        <button class="exp-btn" id="d-html"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>匯出 HTML（含照片放大）</button>
+        <button class="exp-btn" id="d-csv"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>匯出 Excel（CSV）</button>
+      </div>
+      <div class="card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:10px;">工地資訊</div>
+        <div class="field"><label>工地名稱</label><input type="text" id="proj-name" placeholder="XX大樓新建工程"></div>
+        <div class="field"><label>工地主任</label><input type="text" id="proj-mgr" placeholder="姓名"></div>
+        <div style="font-size:14px;font-weight:600;margin:12px 0 10px;">資料備份</div>
+        <button class="exp-btn" id="btn-backup">📦 匯出備份（JSON）</button>
+        <label class="exp-btn" style="cursor:pointer;">📥 還原備份（JSON）<input type="file" id="restore-inp" accept=".json"></label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 工安巡檢 ══ -->
+  <div id="module-safety" style="display:none;">
+    <div class="tab-bar">
+      <div class="tab ts" id="st-form-btn">巡檢表單</div>
+      <div class="tab" id="st-hist-btn">巡檢記錄</div>
+    </div>
+    <div class="section" id="st-form">
+      <div class="card">
+        <div class="field"><label>巡檢地點</label><input type="text" id="s-loc" placeholder="例：2F 施工區"></div>
+        <div class="field">
+          <label>巡檢項目 <span style="font-size:11px;color:#aaa;">（點 × 刪除）</span></label>
+          <div class="type-chips" id="s-chips"></div>
+          <div class="type-add-row"><input type="text" id="s-chip-inp" placeholder="新增自訂項目"><button id="s-chip-add" style="border-color:#E67E22;color:#E67E22;">新增</button></div>
+        </div>
+        <div class="field"><label>備註</label><textarea id="s-desc" placeholder="備註說明..."></textarea></div>
+        <div class="field">
+          <label>巡檢照片（可多選，自動標記日期）</label>
+          <div class="photo-btn" id="s-ph-btn" style="border-color:#E67E22;"><svg width="24" height="24" fill="none" stroke="#E67E22" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>點擊拍照 / 一次選多張</div>
+          <input type="file" id="s-file" accept="image/*" multiple>
+          <div class="photo-grid" id="s-preview"></div>
+        </div>
+        <div class="field">
+          <label>巡檢結果</label>
+          <div class="result-row">
+            <button class="rbtn r-pass" id="s-pass">✅ 通過</button>
+            <button class="rbtn" id="s-fail">❌ 不合格</button>
+          </div>
+        </div>
+        <button class="submit-btn btn-s" id="s-submit">儲存巡檢記錄</button>
+      </div>
+    </div>
+    <div class="section" id="st-hist">
+      <div class="stats">
+        <div class="stat"><div class="stat-num" id="s-total">0</div><div class="stat-label">總計</div></div>
+        <div class="stat"><div class="stat-num" style="color:#27AE60" id="s-pass-n">0</div><div class="stat-label">通過</div></div>
+        <div class="stat"><div class="stat-num" style="color:#C0392B" id="s-fail-n">0</div><div class="stat-label">不合格</div></div>
+      </div>
+      <div class="filter-row">
+        <select id="s-fr"><option value="">全部結果</option><option value="pass">✅ 通過</option><option value="fail">❌ 不合格</option></select>
+        <select id="s-ft"><option value="">全部項目</option></select>
+      </div>
+      <div id="safety-list"></div>
+      <button class="exp-btn" id="s-word" style="margin-top:8px;"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>匯出工安巡檢報告（Word）</button>
+    </div>
+  </div>
+
+  <!-- ══ 材料驗收 ══ -->
+  <div id="module-material" style="display:none;">
+    <div class="tab-bar">
+      <div class="tab tm" id="mt-add-btn">新增驗收</div>
+      <div class="tab" id="mt-list-btn">驗收記錄</div>
+    </div>
+    <div class="section" id="mt-add">
+      <div class="card">
+        <div class="field"><label>材料名稱</label><input type="text" id="m-name" placeholder="例：H型鋼 200x200"></div>
+        <div class="field">
+          <label>材料類型 <span style="font-size:11px;color:#aaa;">（點 × 刪除）</span></label>
+          <div class="type-chips" id="m-chips"></div>
+          <div class="type-add-row"><input type="text" id="m-chip-inp" placeholder="新增自訂類型"><button id="m-chip-add" style="border-color:#27AE60;color:#27AE60;">新增</button></div>
+        </div>
+        <div class="field"><label>數量／規格</label><input type="text" id="m-qty" placeholder="例：20 支 / 6M"></div>
+        <div class="field"><label>廠商 / 來源</label><input type="text" id="m-vendor" placeholder="例：XX鋼鐵"></div>
+        <div class="field">
+          <label>驗收結果</label>
+          <div class="result-row">
+            <button class="rbtn r-accept" id="m-accept">✅ 合格</button>
+            <button class="rbtn" id="m-partial">⚠️ 部分合格</button>
+            <button class="rbtn" id="m-reject">❌ 退料</button>
+          </div>
+        </div>
+        <div class="field"><label>備註</label><textarea id="m-desc" placeholder="備註說明..."></textarea></div>
+        <div class="field">
+          <label>驗收照片（可多選，自動標記日期）</label>
+          <div class="photo-btn" id="m-ph-btn" style="border-color:#27AE60;"><svg width="24" height="24" fill="none" stroke="#27AE60" stroke-width="1.5" viewBox="0 0 24 24"><path d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3"/></svg>點擊拍照 / 一次選多張</div>
+          <input type="file" id="m-file" accept="image/*" multiple>
+          <div class="photo-grid" id="m-preview"></div>
+        </div>
+        <button class="submit-btn btn-m" id="m-submit">儲存驗收記錄</button>
+      </div>
+    </div>
+    <div class="section" id="mt-list">
+      <div class="stats">
+        <div class="stat"><div class="stat-num" id="m-total">0</div><div class="stat-label">總計</div></div>
+        <div class="stat"><div class="stat-num" style="color:#27AE60" id="m-accept-n">0</div><div class="stat-label">合格</div></div>
+        <div class="stat"><div class="stat-num" style="color:#C0392B" id="m-reject-n">0</div><div class="stat-label">退料</div></div>
+      </div>
+      <div class="filter-row">
+        <select id="m-fr"><option value="">全部結果</option><option value="accept">✅ 合格</option><option value="partial">⚠️ 部分合格</option><option value="reject">❌ 退料</option></select>
+        <select id="m-ft"><option value="">全部類型</option></select>
+      </div>
+      <div id="material-list"></div>
+      <button class="exp-btn" id="m-word" style="margin-top:8px;"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>匯出材料驗收報告（Word）</button>
+    </div>
+  </div>
+</div>
+
+<div class="lb" id="lb"><button class="lb-x" id="lb-x">×</button><img id="lb-img" src="" alt=""><div class="lb-nav"><button id="lb-p">‹</button><button id="lb-n">›</button></div><div class="lb-c" id="lb-c"></div></div>
+<div class="dlg" id="dlg"><div class="dlg-box"><div class="dlg-title" id="dlg-t">確認</div><div class="dlg-msg" id="dlg-m"></div><div class="dlg-btns"><button class="dlg-btn dlg-cancel" id="dlg-no">取消</button><button class="dlg-btn dlg-ok" id="dlg-yes">確定</button></div></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ 資料 ══
+var defects    = JSON.parse(localStorage.getItem('defects')    || '[]');
+var safetyLogs = JSON.parse(localStorage.getItem('safetyLogs') || '[]');
+var matLogs    = JSON.parse(localStorage.getItem('matLogs')    || '[]');
+// 所有類型都存在 customTypes，預設類型也一樣，差別只是刪除後回到第一個
+var dTypes = JSON.parse(localStorage.getItem('dTypes') || JSON.stringify(['二丁掛','地磚','泥作','結構','水電','裝修','安全','其他']));
+var sTypes = JSON.parse(localStorage.getItem('sTypes') || JSON.stringify(['安全帽','安全網','施工架','圍欄','電氣安全','動火作業','個人防護']));
+var mTypes = JSON.parse(localStorage.getItem('mTypes') || JSON.stringify(['鋼筋','混凝土','鋼材','木材','砂石','防水材料','磁磚','其他']));
+
+var dType = dTypes[0], dPri = 'urgent', dPh = [];
+var sType = sTypes[0], sRes = 'pass',   sPh = [];
+var mType = mTypes[0], mRes = 'accept', mPh = [];
+var dEditing = null;
+
+var PL = {urgent:'🔴 緊急',high:'🟠 高',normal:'🟢 一般',low:'⚪ 低'};
+var PC = {urgent:'#C0392B',high:'#E67E22',normal:'#27AE60',low:'#888'};
+var PB = {urgent:'#FDECEA',high:'#FEF3E2',normal:'#EAF5EA',low:'#F5F5F5'};
+var PO = {urgent:0,high:1,normal:2,low:3};
+
+function getPri(d){var p=d&&d.priority;return(p&&PL[p])?p:'normal';}
+function todayStr(){var d=new Date();return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+('0'+d.getDate()).slice(-2);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function saveD(){localStorage.setItem('defects',JSON.stringify(defects));}
+function saveS(){localStorage.setItem('safetyLogs',JSON.stringify(safetyLogs));}
+function saveM(){localStorage.setItem('matLogs',JSON.stringify(matLogs));}
+function saveDT(){localStorage.setItem('dTypes',JSON.stringify(dTypes));}
+function saveST(){localStorage.setItem('sTypes',JSON.stringify(sTypes));}
+function saveMT(){localStorage.setItem('mTypes',JSON.stringify(mTypes));}
+
+document.getElementById('date-display').textContent = todayStr();
+
+// ── Toast ──
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2200);}
+
+// ── 對話框 ──
+var dlgCb=null;
+function dlg(title,msg,okTxt,okColor,cb){
+  document.getElementById('dlg-t').textContent=title||'確認';
+  document.getElementById('dlg-m').textContent=msg;
+  document.getElementById('dlg-yes').textContent=okTxt||'確定';
+  document.getElementById('dlg-yes').style.background=okColor||'#C0392B';
+  document.getElementById('dlg').classList.add('open');
+  dlgCb=cb;
+}
+document.getElementById('dlg-no').addEventListener('click',function(){document.getElementById('dlg').classList.remove('open');dlgCb=null;});
+document.getElementById('dlg-yes').addEventListener('click',function(){document.getElementById('dlg').classList.remove('open');if(dlgCb){dlgCb();dlgCb=null;}});
+
+// ── 燈箱 ──
+var lbArr=[],lbI=0;
+function openLb(arr,i){lbArr=arr.slice();lbI=i;document.getElementById('lb-img').src=lbArr[lbI];document.getElementById('lb-c').textContent=(lbI+1)+' / '+lbArr.length;document.getElementById('lb').classList.add('open');}
+document.getElementById('lb-x').addEventListener('click',function(){document.getElementById('lb').classList.remove('open');});
+document.getElementById('lb').addEventListener('click',function(e){if(e.target===this)this.classList.remove('open');});
+document.getElementById('lb-p').addEventListener('click',function(){lbI=(lbI-1+lbArr.length)%lbArr.length;document.getElementById('lb-img').src=lbArr[lbI];document.getElementById('lb-c').textContent=(lbI+1)+' / '+lbArr.length;});
+document.getElementById('lb-n').addEventListener('click',function(){lbI=(lbI+1)%lbArr.length;document.getElementById('lb-img').src=lbArr[lbI];document.getElementById('lb-c').textContent=(lbI+1)+' / '+lbArr.length;});
+
+// ── 照片工具 ──
+function stamp(src,cb){
+  var d=todayStr();var img=new Image();img.onerror=function(){cb(src);};
+  img.onload=function(){
+    var c=document.createElement('canvas');c.width=img.width;c.height=img.height;
+    var ctx=c.getContext('2d');ctx.drawImage(img,0,0);
+    var fs=Math.max(16,Math.round(img.width*0.045));
+    ctx.font='bold '+fs+'px sans-serif';ctx.textAlign='right';
+    var tw=ctx.measureText(d).width,pad=fs*0.5,x=img.width-pad,y=img.height-pad;
+    ctx.fillStyle='rgba(0,0,0,0.6)';ctx.fillRect(x-tw-pad*1.5,y-fs-pad*0.5,tw+pad*3,fs+pad*1.2);
+    ctx.fillStyle='#fff';ctx.fillText(d,x,y);cb(c.toDataURL('image/jpeg',0.88));
+  };img.src=src;
+}
+function addFiles(files,arr,previewId){
+  Array.from(files).forEach(function(f){
+    var r=new FileReader();r.onload=function(e){stamp(e.target.result,function(s){
+      var idx=arr.length;arr.push(s);
+      var w=document.createElement('div');w.className='photo-thumb';
+      var img=document.createElement('img');img.src=s;
+      (function(i){img.addEventListener('click',function(){openLb(arr,i);});})(idx);
+      w.appendChild(img);
+      if(previewId)document.getElementById(previewId).appendChild(w);
+    });};r.readAsDataURL(f);
+  });
+}
+function dlBlob(blob,name){var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},1500);}
+
+// ── 模組切換 ──
+function switchMod(mod){
+  ['defect','safety','material'].forEach(function(m){
+    document.getElementById('module-'+m).style.display=m===mod?'block':'none';
+    document.getElementById('mod-'+m).className='module-btn'+(m===mod?' mod-'+m[0]:'');
+  });
+  if(mod==='defect'){renderDChips();switchDTab('list');}
+  if(mod==='safety'){renderSChips();switchSTab('form');}
+  if(mod==='material'){renderMChips();switchMTab('add');}
+}
+document.getElementById('mod-defect').addEventListener('click',function(){switchMod('defect');});
+document.getElementById('mod-safety').addEventListener('click',function(){switchMod('safety');});
+document.getElementById('mod-material').addEventListener('click',function(){switchMod('material');});
+
+// ── Chip 工具 ──
+function mkChip(text, isActive, activeClass, onClick, onDel){
+  var chip=document.createElement('div');
+  chip.className='chip'+(isActive?' '+activeClass:'');
+  var span=document.createElement('span');span.textContent=text;
+  chip.appendChild(span);
+  // 所有類型都可以刪除
+  var x=document.createElement('span');x.className='chip-x';x.textContent='×';
+  x.addEventListener('click',function(e){e.stopPropagation();onDel();});
+  chip.appendChild(x);
+  chip.addEventListener('click',onClick);
+  return chip;
+}
+
+// ══════════════════════════════
+// 缺失管理
+// ══════════════════════════════
+function switchDTab(t){
+  ['list','add','exp'].forEach(function(n){
+    document.getElementById('dt-'+n+'-btn').className='tab'+(t===n?' td':'');
+    document.getElementById('dt-'+n).style.display=t===n?'block':'none';
+  });
+  if(t==='list')renderDList();
+  if(t==='add'){renderDChips();syncDPri();}
+  if(t==='exp')updateDExp();
+}
+document.getElementById('dt-list-btn').addEventListener('click',function(){switchDTab('list');});
+document.getElementById('dt-add-btn').addEventListener('click',function(){switchDTab('add');});
+document.getElementById('dt-exp-btn').addEventListener('click',function(){switchDTab('exp');});
+switchDTab('list');
+
+function renderDChips(){
+  if(!dTypes.includes(dType)) dType=dTypes[0]||'';
+  var c=document.getElementById('d-chips');c.innerHTML='';
+  dTypes.forEach(function(t){
+    c.appendChild(mkChip(t,t===dType,'cd',
+      function(){dType=t;renderDChips();},
+      function(){
+        if(dTypes.length<=1){toast('⚠️ 至少保留一個類型');return;}
+        dlg('刪除類型','確定刪除「'+t+'」？','確定刪除','#C0392B',function(){
+          dTypes=dTypes.filter(function(x){return x!==t;});saveDT();
+          if(dType===t)dType=dTypes[0];
+          renderDChips();rebuildDFT();
+        });
+      }
+    ));
+  });
+}
+document.getElementById('d-chip-add').addEventListener('click',function(){
+  var v=document.getElementById('d-chip-inp').value.trim();if(!v)return;
+  if(!dTypes.includes(v)){dTypes.push(v);saveDT();}
+  dType=v;document.getElementById('d-chip-inp').value='';renderDChips();rebuildDFT();
+});
+function rebuildDFT(){
+  var s=document.getElementById('d-ft'),c=s.value;
+  s.innerHTML='<option value="">全部類型</option>'+dTypes.map(function(t){return'<option value="'+t+'"'+(c===t?' selected':'')+'>'+t+'</option>';}).join('');
+}
+
+function syncDPri(){
+  document.querySelectorAll('#d-pri .pri-tag').forEach(function(el){
+    var p=el.getAttribute('data-p');el.className='pri-tag'+(dPri===p?' sel-'+p:'');
+  });
+}
+document.querySelectorAll('#d-pri .pri-tag').forEach(function(el){
+  el.addEventListener('click',function(){dPri=this.getAttribute('data-p');syncDPri();});
+});
+
+document.getElementById('d-ph-btn').addEventListener('click',function(){document.getElementById('d-file').click();});
+document.getElementById('d-file').addEventListener('change',function(){addFiles(this.files,dPh,'d-preview');this.value='';});
+
+document.getElementById('d-submit').addEventListener('click',function(){
+  var loc=document.getElementById('d-loc').value.trim();if(!loc){toast('⚠️ 請填寫缺失位置');return;}
+  defects.unshift({id:Date.now(),location:loc,type:dType,priority:dPri,desc:document.getElementById('d-desc').value.trim(),photos:dPh.slice(),fixPhotos:[],status:'pending',createdAt:todayStr()});
+  saveD();dPh.length=0;document.getElementById('d-preview').innerHTML='';
+  document.getElementById('d-loc').value='';document.getElementById('d-desc').value='';document.getElementById('d-file').value='';
+  dType=dTypes[0]||'';dPri='urgent';renderDChips();syncDPri();toast('✅ 缺失記錄已新增');switchDTab('list');
+});
+
+document.getElementById('d-fs').addEventListener('change',renderDList);
+document.getElementById('d-fp').addEventListener('change',renderDList);
+document.getElementById('d-ft').addEventListener('change',renderDList);
+document.getElementById('proj-name').addEventListener('input',function(){document.getElementById('proj-display').textContent=this.value||'工地管理';});
+
+function renderDList(){
+  rebuildDFT();
+  var fs=document.getElementById('d-fs').value,ft=document.getElementById('d-ft').value,fp=document.getElementById('d-fp').value;
+  var list=defects.filter(function(d){return(!fs||d.status===fs)&&(!ft||d.type===ft)&&(!fp||getPri(d)===fp);});
+  list.sort(function(a,b){return(PO[getPri(a)]||2)-(PO[getPri(b)]||2);});
+  document.getElementById('d-total').textContent=defects.length;
+  document.getElementById('d-pending').textContent=defects.filter(function(d){return d.status==='pending';}).length;
+  document.getElementById('d-done').textContent=defects.filter(function(d){return d.status==='done';}).length;
+  var el=document.getElementById('defect-list');el.innerHTML='';
+  if(!list.length){el.innerHTML='<div class="empty">目前沒有缺失記錄</div>';return;}
+
+  list.forEach(function(d){
+    var pri=getPri(d),isEd=dEditing===d.id;
+    var card=document.createElement('div');card.className='rcard pri-'+pri;
+
+    // Header
+    var hdr=document.createElement('div');hdr.className='rhdr';
+    var left=document.createElement('div');
+    var pb=document.createElement('span');pb.className='pri-badge';pb.style.background=PB[pri];pb.style.color=PC[pri];pb.textContent=PL[pri];
+    var tt=document.createElement('div');tt.className='rtitle';tt.textContent=d.location;
+    var mt=document.createElement('div');mt.className='rmeta';mt.textContent=d.type+' ・ '+d.createdAt;
+    left.appendChild(pb);left.appendChild(tt);left.appendChild(mt);
+    var bdg=document.createElement('span');bdg.className='badge '+(d.status==='pending'?'bp':'bd');bdg.textContent=d.status==='pending'?'待改善':'驗收完成';
+    hdr.appendChild(left);hdr.appendChild(bdg);card.appendChild(hdr);
+
+    if(d.desc){var dm=document.createElement('div');dm.style.cssText='font-size:13px;color:#666;margin:5px 0 8px;';dm.textContent=d.desc;card.appendChild(dm);}
+
+    var photos=d.photos||[];
+    if(photos.length){var l1=mkPhlbl('現況照片','#555');card.appendChild(l1);card.appendChild(mkPhRow(photos,isEd,d.id,'photos'));}
+    var fixPhotos=d.fixPhotos||[];
+    if(fixPhotos.length){var l2=mkPhlbl('改善後照片','#3B6D11');card.appendChild(l2);card.appendChild(mkPhRow(fixPhotos,isEd,d.id,'fixPhotos'));}
+
+    // ── 編輯面板（修復版）──
+    if(isEd){
+      var ep=document.createElement('div');ep.className='ep';
+
+      // 位置
+      var locLbl=document.createElement('span');locLbl.className='ep-lbl';locLbl.textContent='位置';
+      var locInp=document.createElement('input');locInp.type='text';locInp.value=d.location;locInp.placeholder='位置';
+      ep.appendChild(locLbl);ep.appendChild(locInp);
+
+      // 類型
+      var typLbl=document.createElement('span');typLbl.className='ep-lbl';typLbl.textContent='類型';
+      var typSel=document.createElement('select');
+      dTypes.forEach(function(t){var o=document.createElement('option');o.value=t;o.textContent=t;if(t===d.type)o.selected=true;typSel.appendChild(o);});
+      ep.appendChild(typLbl);ep.appendChild(typSel);
+
+      // 優先緩急
+      var priLbl=document.createElement('span');priLbl.className='ep-lbl';priLbl.textContent='優先緩急';
+      ep.appendChild(priLbl);
+      var epPri=d.priority||'normal';
+      var priRow=document.createElement('div');priRow.className='ep-pri';
+      ['urgent','high','normal','low'].forEach(function(p){
+        var pt=document.createElement('div');pt.className='ep-pri-btn';
+        pt.style.borderColor=epPri===p?PC[p]:'#ddd';
+        pt.style.background=epPri===p?PB[p]:'#fff';
+        pt.style.color=epPri===p?PC[p]:'#888';
+        pt.textContent=PL[p];
+        (function(pp){pt.addEventListener('click',function(){
+          epPri=pp;
+          priRow.childNodes.forEach(function(el,i){
+            var ppp=['urgent','high','normal','low'][i];
+            el.style.borderColor=ppp===pp?PC[ppp]:'#ddd';
+            el.style.background=ppp===pp?PB[ppp]:'#fff';
+            el.style.color=ppp===pp?PC[ppp]:'#888';
+          });
+        });})(p);
+        priRow.appendChild(pt);
+      });
+      ep.appendChild(priRow);
+
+      // 備註
+      var descLbl=document.createElement('span');descLbl.className='ep-lbl';descLbl.textContent='備註';
+      var descTa=document.createElement('textarea');descTa.value=d.desc||'';descTa.placeholder='備註';
+      ep.appendChild(descLbl);ep.appendChild(descTa);
+
+      // 新增現況照片
+      var apLbl=document.createElement('label');apLbl.className='ep-add-ph';apLbl.textContent='＋ 新增現況照片';
+      var apInp=document.createElement('input');apInp.type='file';apInp.accept='image/*';apInp.multiple=true;
+      (function(id){
+        apInp.addEventListener('change',function(){
+          var tmpPh=[];
+          addFiles(this.files,tmpPh,null);
+          // 等照片處理完再存（用 setTimeout 確保 stamp 完成）
+          var files=Array.from(this.files);
+          var count=0;
+          files.forEach(function(f){
+            var r=new FileReader();r.onload=function(e){stamp(e.target.result,function(s){
+              defects=defects.map(function(x){if(x.id!==id)return x;var c=Object.assign({},x);c.photos=(c.photos||[]).concat([s]);return c;});
+              count++;if(count===files.length){saveD();renderDList();}
+            });};r.readAsDataURL(f);
+          });
+          this.value='';
+        });
+      })(d.id);
+      apLbl.appendChild(apInp);
+      ep.appendChild(apLbl);
+
+      // 儲存按鈕
+      var saveBtn=document.createElement('button');saveBtn.className='ep-save';saveBtn.style.background='#185FA5';saveBtn.textContent='儲存';
+      (function(id,li,ts,ta){
+        saveBtn.addEventListener('click',function(){
+          var nloc=li.value.trim();if(!nloc){toast('⚠️ 位置不可空白');return;}
+          defects=defects.map(function(x){return x.id===id?Object.assign({},x,{location:nloc,type:ts.value,priority:epPri,desc:ta.value.trim()}):x;});
+          saveD();dEditing=null;toast('✅ 已儲存');renderDList();
+        });
+      })(d.id,locInp,typSel,descTa);
+      ep.appendChild(saveBtn);
+      card.appendChild(ep);
+    }
+
+    // 按鈕列
+    var ar=document.createElement('div');ar.className='ar';
+
+    // 驗收完成 / 返回待改善
+    (function(id,st){
+      var b=document.createElement('button');b.className='abtn';
+      if(st==='pending'){
+        b.style.color='#185FA5';b.textContent='驗收完成';
+        b.addEventListener('click',function(){defects=defects.map(function(x){return x.id===id?Object.assign({},x,{status:'done'}):x;});saveD();renderDList();});
+      }else{
+        b.style.color='#854F0B';b.textContent='返回待改善';
+        b.addEventListener('click',function(){defects=defects.map(function(x){return x.id===id?Object.assign({},x,{status:'pending'}):x;});saveD();renderDList();});
+      }
+      ar.appendChild(b);
+    })(d.id,d.status);
+
+    // 編輯
+    (function(id){
+      var b=document.createElement('button');b.className='abtn';b.style.color='#444';b.textContent=isEd?'取消':'編輯';
+      b.addEventListener('click',function(){dEditing=(dEditing===id)?null:id;renderDList();});
+      ar.appendChild(b);
+    })(d.id);
+
+    // 改善照片
+    if(!isEd){
+      var fl=document.createElement('label');fl.className='abtn';fl.style.cursor='pointer';fl.textContent='改善照片';
+      var fi=document.createElement('input');fi.type='file';fi.accept='image/*';fi.multiple=true;
+      (function(id){
+        fi.addEventListener('change',function(){
+          var files=Array.from(this.files);var count=0;
+          files.forEach(function(f){
+            var r=new FileReader();r.onload=function(e){stamp(e.target.result,function(s){
+              defects=defects.map(function(x){if(x.id!==id)return x;var c=Object.assign({},x);c.fixPhotos=(c.fixPhotos||[]).concat([s]);return c;});
+              count++;if(count===files.length){saveD();renderDList();}
+            });};r.readAsDataURL(f);
+          });
+          fi.value='';
+        });
+      })(d.id);
+      fl.appendChild(fi);ar.appendChild(fl);
+    }
+
+    // 刪除
+    (function(id,loc){
+      var b=document.createElement('button');b.className='abtn';b.style.color='#C0392B';b.textContent='刪除';
+      b.addEventListener('click',function(){
+        dlg('確認刪除','確定刪除「'+loc+'」？','確定刪除','#C0392B',function(){
+          defects=defects.filter(function(x){return x.id!==id;});saveD();toast('已刪除');renderDList();
+        });
+      });
+      ar.appendChild(b);
+    })(d.id,d.location);
+
+    card.appendChild(ar);el.appendChild(card);
+  });
+}
+
+function mkPhRow(photos,isEd,recId,field){
+  var wrap=document.createElement('div');wrap.className='photo-row';
+  photos.forEach(function(p,idx){
+    var pw=document.createElement('div');pw.className='pw';
+    var img=document.createElement('img');img.src=p;
+    (function(i,arr){img.addEventListener('click',function(){openLb(arr,i);});})(idx,photos);
+    pw.appendChild(img);
+    if(isEd){
+      var db=document.createElement('button');db.className='del-ph';db.textContent='×';
+      (function(i,fld,rid){
+        db.addEventListener('click',function(e){
+          e.stopPropagation();
+          defects=defects.map(function(x){if(x.id!==rid)return x;var c=Object.assign({},x);c[fld]=c[fld].filter(function(_,ii){return ii!==i;});return c;});
+          saveD();renderDList();
+        });
+      })(idx,field,recId);
+      pw.appendChild(db);
+    }
+    wrap.appendChild(pw);
+  });
+  return wrap;
+}
+function mkPhlbl(txt,color){var l=document.createElement('div');l.className='phlbl';l.style.color=color||'#555';l.textContent=txt;return l;}
+
+// ── 缺失匯出 ──
+function getDExp(){var es=document.getElementById('d-es').value,ep=document.getElementById('d-ep').value;return defects.filter(function(d){return(!es||d.status===es)&&(!ep||getPri(d)===ep);});}
+function updateDExp(){document.getElementById('d-ecount').textContent='共 '+getDExp().length+' 筆';}
+document.getElementById('d-es').addEventListener('change',updateDExp);
+document.getElementById('d-ep').addEventListener('change',updateDExp);
+
+function buildWordDoc(list,proj,mgr,accentColor){
+  var pend=list.filter(function(d){return d.status==='pending';}).length;
+  var done=list.filter(function(d){return d.status==='done';}).length;
+  var summary='<div style="border-bottom:3px solid '+accentColor+';padding-bottom:10px;margin-bottom:14px;"><div style="font-size:20px;font-weight:700;color:'+accentColor+';">'+esc(proj)+'</div><div style="font-size:12px;color:#888;margin-top:4px;">工地主任：'+esc(mgr)+'　匯出日期：'+todayStr()+'　共 '+list.length+' 筆</div></div>';
+  var statsRow='<table style="width:100%;border-collapse:collapse;margin-bottom:14px;"><tr><td style="padding:10px;text-align:center;background:#F5F5F5;border:1px solid #ddd;"><div style="font-size:22px;font-weight:700;">'+list.length+'</div><div style="font-size:11px;color:#666;">共計</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#FEF9F0;border:1px solid #F5C88A;"><div style="font-size:22px;font-weight:700;color:#854F0B;">'+pend+'</div><div style="font-size:11px;color:#666;">待改善</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#EEF5FC;border:1px solid #9BBFE0;"><div style="font-size:22px;font-weight:700;color:#185FA5;">'+done+'</div><div style="font-size:11px;color:#666;">驗收完成</div></td></tr></table>';
+  var rows=list.map(function(d,i){
+    var pri=getPri(d),sc=d.status==='pending'?'#854F0B':'#185FA5',sb=d.status==='pending'?'#FEF3E2':'#EEF5FC';
+    var allPh=(d.photos||[]).map(function(p){return{src:p,lbl:'現況'};}).concat((d.fixPhotos||[]).map(function(p){return{src:p,lbl:'改善後'};}));
+    var ph='';if(allPh.length){ph='<tr><td colspan="2" style="padding:8px;"><div style="display:flex;flex-wrap:wrap;gap:8px;">'+allPh.map(function(p){return'<div style="text-align:center;"><img src="'+p.src+'" style="height:8cm;width:auto;max-width:10cm;object-fit:cover;border-radius:4px;border:1px solid #ddd;"><div style="font-size:10px;color:'+(p.lbl==='改善後'?'#3B6D11':'#555')+';margin-top:3px;font-weight:600;">'+p.lbl+'</div></div>';}).join('')+'</div></td></tr>';}
+    return'<table style="width:100%;border-collapse:collapse;margin-bottom:18px;page-break-inside:avoid;border:1px solid #ccc;"><tr style="background:'+accentColor+';"><td colspan="2" style="padding:8px 10px;color:#fff;font-weight:700;font-size:13px;">'+(i+1)+'. '+esc(d.location)+'<span style="float:right;background:'+sb+';color:'+sc+';padding:2px 9px;border-radius:999px;font-size:11px;margin-left:4px;">'+(d.status==='pending'?'待改善':'驗收完成')+'</span><span style="float:right;background:'+PB[pri]+';color:'+PC[pri]+';padding:2px 9px;border-radius:999px;font-size:11px;">'+PL[pri]+'</span></td></tr><tr style="background:#f5f5f5;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;width:70px;">類型</td><td style="padding:6px 10px;font-size:12px;">'+esc(d.type)+'</td></tr><tr><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">建立日期</td><td style="padding:6px 10px;font-size:12px;">'+d.createdAt+'</td></tr>'+(d.desc?'<tr style="background:#f9f9f9;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">備註</td><td style="padding:6px 10px;font-size:12px;">'+esc(d.desc)+'</td></tr>':'')+ph+'</table>';
+  }).join('');
+  return'<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(proj)+'</title><style>@page{size:A4;margin:18mm 15mm;}body{font-family:"Arial","微軟正黑體",sans-serif;font-size:13px;color:#111;}@media print{body{margin:0;}}</style></head><body>'+summary+statsRow+rows+'</body></html>';
+}
+
+document.getElementById('d-word').addEventListener('click',function(){
+  var list=getDExp();if(!list.length){toast('⚠️ 沒有符合條件的記錄');return;}
+  var proj=document.getElementById('proj-name').value||'工地缺失報告',mgr=document.getElementById('proj-mgr').value||'';
+  dlBlob(new Blob([buildWordDoc(list,proj,mgr,'#1F5FA6')],{type:'application/vnd.ms-word;charset=utf-8'}),'缺失報告_'+todayStr().replace(/\//g,'')+'.doc');toast('✅ Word 已下載');
+});
+
+document.getElementById('d-html').addEventListener('click',function(){
+  var list=getDExp();if(!list.length){toast('⚠️ 沒有符合條件的記錄');return;}
+  var proj=document.getElementById('proj-name').value||'工地缺失報告',mgr=document.getElementById('proj-mgr').value||'';
+  var pend=list.filter(function(d){return d.status==='pending';}).length,dn=list.filter(function(d){return d.status==='done';}).length;
+  var ag=list.map(function(d){return(d.photos||[]).concat(d.fixPhotos||[]);});
+  var body=list.map(function(d,i){
+    var pri=getPri(d),sc=d.status==='pending'?'#854F0B':'#185FA5',sb=d.status==='pending'?'#FAEEDA':'#E6F1FB';
+    var ap=(d.photos||[]).map(function(p,j){return{src:p,lbl:'現況',gi:i,pi:j};}).concat((d.fixPhotos||[]).map(function(p,j){return{src:p,lbl:'改善後',gi:i,pi:(d.photos||[]).length+j};}));
+    var ph='';if(ap.length){ph='<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">'+ap.map(function(p){return'<div style="text-align:center;cursor:pointer;" onclick="openLb('+p.gi+','+p.pi+')"><img src="'+p.src+'" style="height:8cm;width:auto;max-width:12cm;object-fit:cover;border-radius:6px;border:1px solid #ddd;"><div style="font-size:11px;color:'+(p.lbl==='改善後'?'#3B6D11':'#555')+';margin-top:3px;font-weight:600;">'+p.lbl+'</div></div>';}).join('')+'</div>';}
+    return'<div style="border:1px solid #ddd;border-left:4px solid '+PC[pri]+';border-radius:8px;padding:14px;margin-bottom:14px;page-break-inside:avoid;"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;margin-bottom:6px;"><div><span style="background:'+PB[pri]+';color:'+PC[pri]+';padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;margin-right:6px;">'+PL[pri]+'</span><span style="font-size:15px;font-weight:700;">'+(i+1)+'. '+esc(d.location)+'</span><div style="font-size:12px;color:#888;margin-top:3px;">'+esc(d.type)+' ・ '+d.createdAt+'</div></div><span style="background:'+sb+';color:'+sc+';padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;">'+(d.status==='pending'?'待改善':'驗收完成')+'</span></div>'+(d.desc?'<div style="font-size:13px;color:#555;margin:6px 0;">備註：'+esc(d.desc)+'</div>':'')+ph+'</div>';
+  }).join('');
+  var lbs='<script>\nvar _g='+JSON.stringify(ag)+';\nvar _gi=0,_pi=0;\nfunction openLb(g,p){_gi=g;_pi=p;document.getElementById("_img").src=_g[g][p];document.getElementById("_c").textContent=(p+1)+" / "+_g[g].length;document.getElementById("_lb").style.display="flex";}\nfunction _cl(){document.getElementById("_lb").style.display="none";}\nfunction _nv(d){_pi=(_pi+d+_g[_gi].length)%_g[_gi].length;document.getElementById("_img").src=_g[_gi][_pi];document.getElementById("_c").textContent=(_pi+1)+" / "+_g[_gi].length;}\ndocument.addEventListener("keydown",function(e){if(document.getElementById("_lb").style.display!=="flex")return;if(e.key==="Escape")_cl();if(e.key==="ArrowLeft")_nv(-1);if(e.key==="ArrowRight")_nv(1);});\n<\/script>';
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>'+esc(proj)+'</title><style>@page{size:A4;margin:15mm}body{font-family:sans-serif;padding:20px;font-size:13px;max-width:900px;margin:0 auto}@media print{body{padding:0}#_lb{display:none!important}}#_lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;flex-direction:column;align-items:center;justify-content:center;}#_img{max-width:94vw;max-height:80vh;object-fit:contain;border-radius:6px;cursor:pointer;}._lbc{position:absolute;top:14px;right:18px;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;}._lbn{display:flex;gap:24px;margin-top:12px;}._lbn button{background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:24px;padding:8px 18px;border-radius:8px;cursor:pointer;}#_c{color:#ccc;font-size:12px;margin-top:8px;}</style></head><body><div id="_lb"><button class="_lbc" onclick="_cl()">×</button><img id="_img" src="" onclick="_nv(1)"><div class="_lbn"><button onclick="_nv(-1)">‹</button><button onclick="_nv(1)">›</button></div><div id="_c"></div></div><div style="border-bottom:3px solid #1F5FA6;padding-bottom:10px;margin-bottom:14px;"><h1 style="font-size:20px;color:#1F5FA6;margin-bottom:4px;">'+esc(proj)+'</h1><p style="color:#888;font-size:12px;">工地主任：'+esc(mgr)+'　匯出日期：'+todayStr()+'</p></div><div style="display:flex;gap:10px;margin-bottom:16px;"><div style="flex:1;padding:10px;text-align:center;background:#f5f5f5;border-radius:8px;border:1px solid #ddd;"><div style="font-size:22px;font-weight:700;">'+list.length+'</div><div style="font-size:11px;color:#666;">共計</div></div><div style="flex:1;padding:10px;text-align:center;background:#FEF9F0;border-radius:8px;border:1px solid #F5C88A;"><div style="font-size:22px;font-weight:700;color:#854F0B;">'+pend+'</div><div style="font-size:11px;color:#666;">待改善</div></div><div style="flex:1;padding:10px;text-align:center;background:#EEF5FC;border-radius:8px;border:1px solid #9BBFE0;"><div style="font-size:22px;font-weight:700;color:#185FA5;">'+dn+'</div><div style="font-size:11px;color:#666;">驗收完成</div></div></div>'+body+lbs+'</body></html>';
+  dlBlob(new Blob([html],{type:'text/html;charset=utf-8'}),'缺失報告_'+todayStr().replace(/\//g,'')+'.html');toast('✅ HTML 報告已下載');
+});
+
+document.getElementById('d-csv').addEventListener('click',function(){
+  var list=getDExp();if(!list.length){toast('⚠️ 沒有符合條件的記錄');return;}
+  var rows=[['編號','優先緩急','位置','類型','備註','狀態','建立日期','現況照片','改善後照片']];
+  list.forEach(function(d,i){rows.push([i+1,PL[getPri(d)],d.location,d.type,d.desc||'',(d.status==='pending'?'待改善':'驗收完成'),d.createdAt,(d.photos||[]).length,(d.fixPhotos||[]).length]);});
+  var csv='\uFEFF'+rows.map(function(r){return r.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
+  dlBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),'缺失報告_'+todayStr().replace(/\//g,'')+'.csv');toast('✅ CSV 已下載');
+});
+
+// ══════════════════════════════
+// 工安巡檢
+// ══════════════════════════════
+function switchSTab(t){
+  ['form','hist'].forEach(function(n){document.getElementById('st-'+n+'-btn').className='tab'+(t===n?' ts':'');document.getElementById('st-'+n).style.display=t===n?'block':'none';});
+  if(t==='form')renderSChips();
+  if(t==='hist')renderSList();
+}
+document.getElementById('st-form-btn').addEventListener('click',function(){switchSTab('form');});
+document.getElementById('st-hist-btn').addEventListener('click',function(){switchSTab('hist');});
+
+function renderSChips(){
+  if(!sTypes.includes(sType))sType=sTypes[0]||'';
+  var c=document.getElementById('s-chips');c.innerHTML='';
+  sTypes.forEach(function(t){
+    c.appendChild(mkChip(t,t===sType,'cs',function(){sType=t;renderSChips();},function(){
+      if(sTypes.length<=1){toast('⚠️ 至少保留一個項目');return;}
+      dlg('刪除項目','確定刪除「'+t+'」？','確定刪除','#C0392B',function(){
+        sTypes=sTypes.filter(function(x){return x!==t;});saveST();if(sType===t)sType=sTypes[0];renderSChips();rebuildSFT();
+      });
+    }));
+  });
+}
+document.getElementById('s-chip-add').addEventListener('click',function(){
+  var v=document.getElementById('s-chip-inp').value.trim();if(!v)return;
+  if(!sTypes.includes(v)){sTypes.push(v);saveST();}
+  sType=v;document.getElementById('s-chip-inp').value='';renderSChips();rebuildSFT();
+});
+function rebuildSFT(){var s=document.getElementById('s-ft'),c=s.value;s.innerHTML='<option value="">全部項目</option>'+sTypes.map(function(t){return'<option value="'+t+'"'+(c===t?' selected':'')+'>'+t+'</option>';}).join('');}
+
+function syncSRes(){document.getElementById('s-pass').className='rbtn'+(sRes==='pass'?' r-pass':'');document.getElementById('s-fail').className='rbtn'+(sRes==='fail'?' r-fail':'');}
+document.getElementById('s-pass').addEventListener('click',function(){sRes='pass';syncSRes();});
+document.getElementById('s-fail').addEventListener('click',function(){sRes='fail';syncSRes();});
+
+document.getElementById('s-ph-btn').addEventListener('click',function(){document.getElementById('s-file').click();});
+document.getElementById('s-file').addEventListener('change',function(){addFiles(this.files,sPh,'s-preview');this.value='';});
+
+document.getElementById('s-submit').addEventListener('click',function(){
+  var loc=document.getElementById('s-loc').value.trim();if(!loc){toast('⚠️ 請填寫巡檢地點');return;}
+  safetyLogs.unshift({id:Date.now(),location:loc,type:sType,desc:document.getElementById('s-desc').value.trim(),photos:sPh.slice(),result:sRes,createdAt:todayStr()});
+  saveS();sPh.length=0;document.getElementById('s-preview').innerHTML='';
+  document.getElementById('s-loc').value='';document.getElementById('s-desc').value='';document.getElementById('s-file').value='';
+  sType=sTypes[0]||'';sRes='pass';renderSChips();syncSRes();toast('✅ 巡檢記錄已儲存');switchSTab('hist');
+});
+
+document.getElementById('s-fr').addEventListener('change',renderSList);
+document.getElementById('s-ft').addEventListener('change',renderSList);
+
+function renderSList(){
+  rebuildSFT();
+  var fr=document.getElementById('s-fr').value,ft=document.getElementById('s-ft').value;
+  var list=safetyLogs.filter(function(d){return(!fr||d.result===fr)&&(!ft||d.type===ft);});
+  document.getElementById('s-total').textContent=safetyLogs.length;
+  document.getElementById('s-pass-n').textContent=safetyLogs.filter(function(d){return d.result==='pass';}).length;
+  document.getElementById('s-fail-n').textContent=safetyLogs.filter(function(d){return d.result==='fail';}).length;
+  var el=document.getElementById('safety-list');el.innerHTML='';
+  if(!list.length){el.innerHTML='<div class="empty">目前沒有巡檢記錄</div>';return;}
+  list.forEach(function(d){
+    var card=document.createElement('div');card.className='rcard cs-card';
+    var hdr=document.createElement('div');hdr.className='rhdr';
+    var left=document.createElement('div');
+    var tt=document.createElement('div');tt.className='rtitle';tt.textContent=d.location;
+    var mt=document.createElement('div');mt.className='rmeta';mt.textContent=d.type+' ・ '+d.createdAt;
+    left.appendChild(tt);left.appendChild(mt);
+    var bdg=document.createElement('span');bdg.className='badge '+(d.result==='pass'?'bpass':'bfail');bdg.textContent=d.result==='pass'?'✅ 通過':'❌ 不合格';
+    hdr.appendChild(left);hdr.appendChild(bdg);card.appendChild(hdr);
+    if(d.desc){var dm=document.createElement('div');dm.style.cssText='font-size:13px;color:#666;margin:5px 0 8px;';dm.textContent=d.desc;card.appendChild(dm);}
+    if((d.photos||[]).length){card.appendChild(mkPhlbl('巡檢照片','#E67E22'));card.appendChild(mkSPhRow(d.photos));}
+    var ar=document.createElement('div');ar.className='ar';
+    (function(id,loc){var b=document.createElement('button');b.className='abtn';b.style.color='#C0392B';b.textContent='刪除';b.addEventListener('click',function(){dlg('確認刪除','確定刪除「'+loc+'」巡檢記錄？','確定刪除','#C0392B',function(){safetyLogs=safetyLogs.filter(function(x){return x.id!==id;});saveS();toast('已刪除');renderSList();});});ar.appendChild(b);})(d.id,d.location);
+    card.appendChild(ar);el.appendChild(card);
+  });
+}
+function mkSPhRow(photos){
+  var wrap=document.createElement('div');wrap.className='photo-row';
+  photos.forEach(function(p,idx){var pw=document.createElement('div');pw.className='pw';var img=document.createElement('img');img.src=p;(function(i){img.addEventListener('click',function(){openLb(photos,i);});})(idx);pw.appendChild(img);wrap.appendChild(pw);});
+  return wrap;
+}
+
+document.getElementById('s-word').addEventListener('click',function(){
+  if(!safetyLogs.length){toast('⚠️ 沒有巡檢記錄');return;}
+  var proj=document.getElementById('proj-name').value||'工安巡檢報告',mgr=document.getElementById('proj-mgr').value||'';
+  var ps=safetyLogs.filter(function(d){return d.result==='pass';}).length,fl=safetyLogs.filter(function(d){return d.result==='fail';}).length;
+  var rows=safetyLogs.map(function(d,i){var rc=d.result==='pass'?'#27AE60':'#C0392B',rb=d.result==='pass'?'#EAF5EA':'#FDECEA';var ph='';if((d.photos||[]).length){ph='<tr><td colspan="2" style="padding:8px;"><div style="display:flex;flex-wrap:wrap;gap:8px;">'+(d.photos||[]).map(function(p){return'<img src="'+p+'" style="height:8cm;width:auto;max-width:10cm;object-fit:cover;border-radius:4px;border:1px solid #ddd;">';}).join('')+'</div></td></tr>';}return'<table style="width:100%;border-collapse:collapse;margin-bottom:18px;page-break-inside:avoid;border:1px solid #ccc;"><tr style="background:#E67E22;"><td colspan="2" style="padding:8px 10px;color:#fff;font-weight:700;font-size:13px;">'+(i+1)+'. '+esc(d.location)+'<span style="float:right;background:'+rb+';color:'+rc+';padding:2px 9px;border-radius:999px;font-size:11px;">'+(d.result==='pass'?'✅ 通過':'❌ 不合格')+'</span></td></tr><tr style="background:#f5f5f5;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;width:70px;">巡檢項目</td><td style="padding:6px 10px;font-size:12px;">'+esc(d.type)+'</td></tr><tr><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">日期</td><td style="padding:6px 10px;font-size:12px;">'+d.createdAt+'</td></tr>'+(d.desc?'<tr style="background:#f9f9f9;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">備註</td><td style="padding:6px 10px;font-size:12px;">'+esc(d.desc)+'</td></tr>':'')+ph+'</table>';}).join('');
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>工安巡檢報告</title><style>@page{size:A4;margin:18mm 15mm;}body{font-family:"Arial","微軟正黑體",sans-serif;font-size:13px;color:#111;}@media print{body{margin:0;}}</style></head><body><div style="border-bottom:3px solid #E67E22;padding-bottom:10px;margin-bottom:14px;"><div style="font-size:20px;font-weight:700;color:#E67E22;">'+esc(proj)+'</div><div style="font-size:12px;color:#888;margin-top:4px;">工地主任：'+esc(mgr)+'　匯出日期：'+todayStr()+'　共 '+safetyLogs.length+' 筆</div></div><table style="width:100%;border-collapse:collapse;margin-bottom:14px;"><tr><td style="padding:10px;text-align:center;background:#F5F5F5;border:1px solid #ddd;"><div style="font-size:22px;font-weight:700;">'+safetyLogs.length+'</div><div style="font-size:11px;color:#666;">共計</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#EAF5EA;border:1px solid #A9DFBF;"><div style="font-size:22px;font-weight:700;color:#27AE60;">'+ps+'</div><div style="font-size:11px;color:#666;">通過</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#FDECEA;border:1px solid #F1948A;"><div style="font-size:22px;font-weight:700;color:#C0392B;">'+fl+'</div><div style="font-size:11px;color:#666;">不合格</div></td></tr></table>'+rows+'</body></html>';
+  dlBlob(new Blob([html],{type:'application/vnd.ms-word;charset=utf-8'}),'工安巡檢報告_'+todayStr().replace(/\//g,'')+'.doc');toast('✅ 工安報告已下載');
+});
+
+// ══════════════════════════════
+// 材料驗收
+// ══════════════════════════════
+function switchMTab(t){
+  ['add','list'].forEach(function(n){document.getElementById('mt-'+n+'-btn').className='tab'+(t===n?' tm':'');document.getElementById('mt-'+n).style.display=t===n?'block':'none';});
+  if(t==='add')renderMChips();
+  if(t==='list')renderMList();
+}
+document.getElementById('mt-add-btn').addEventListener('click',function(){switchMTab('add');});
+document.getElementById('mt-list-btn').addEventListener('click',function(){switchMTab('list');});
+
+function renderMChips(){
+  if(!mTypes.includes(mType))mType=mTypes[0]||'';
+  var c=document.getElementById('m-chips');c.innerHTML='';
+  mTypes.forEach(function(t){
+    c.appendChild(mkChip(t,t===mType,'cm',function(){mType=t;renderMChips();},function(){
+      if(mTypes.length<=1){toast('⚠️ 至少保留一個類型');return;}
+      dlg('刪除類型','確定刪除「'+t+'」？','確定刪除','#C0392B',function(){
+        mTypes=mTypes.filter(function(x){return x!==t;});saveMT();if(mType===t)mType=mTypes[0];renderMChips();rebuildMFT();
+      });
+    }));
+  });
+}
+document.getElementById('m-chip-add').addEventListener('click',function(){
+  var v=document.getElementById('m-chip-inp').value.trim();if(!v)return;
+  if(!mTypes.includes(v)){mTypes.push(v);saveMT();}
+  mType=v;document.getElementById('m-chip-inp').value='';renderMChips();rebuildMFT();
+});
+function rebuildMFT(){var s=document.getElementById('m-ft'),c=s.value;s.innerHTML='<option value="">全部類型</option>'+mTypes.map(function(t){return'<option value="'+t+'"'+(c===t?' selected':'')+'>'+t+'</option>';}).join('');}
+
+function syncMRes(){
+  document.getElementById('m-accept').className='rbtn'+(mRes==='accept'?' r-accept':'');
+  document.getElementById('m-partial').className='rbtn'+(mRes==='partial'?' r-partial':'');
+  document.getElementById('m-reject').className='rbtn'+(mRes==='reject'?' r-reject':'');
+}
+document.getElementById('m-accept').addEventListener('click',function(){mRes='accept';syncMRes();});
+document.getElementById('m-partial').addEventListener('click',function(){mRes='partial';syncMRes();});
+document.getElementById('m-reject').addEventListener('click',function(){mRes='reject';syncMRes();});
+
+document.getElementById('m-ph-btn').addEventListener('click',function(){document.getElementById('m-file').click();});
+document.getElementById('m-file').addEventListener('change',function(){addFiles(this.files,mPh,'m-preview');this.value='';});
+
+function mResLabel(r){return r==='accept'?'✅ 合格':r==='partial'?'⚠️ 部分合格':'❌ 退料';}
+function mResBadge(r){return r==='accept'?'bpass':r==='partial'?'bpart':'bfail';}
+
+document.getElementById('m-submit').addEventListener('click',function(){
+  var name=document.getElementById('m-name').value.trim();if(!name){toast('⚠️ 請填寫材料名稱');return;}
+  matLogs.unshift({id:Date.now(),name:name,type:mType,qty:document.getElementById('m-qty').value.trim(),vendor:document.getElementById('m-vendor').value.trim(),desc:document.getElementById('m-desc').value.trim(),photos:mPh.slice(),result:mRes,createdAt:todayStr()});
+  saveM();mPh.length=0;document.getElementById('m-preview').innerHTML='';
+  document.getElementById('m-name').value='';document.getElementById('m-qty').value='';document.getElementById('m-vendor').value='';document.getElementById('m-desc').value='';document.getElementById('m-file').value='';
+  mType=mTypes[0]||'';mRes='accept';renderMChips();syncMRes();toast('✅ 驗收記錄已儲存');switchMTab('list');
+});
+
+document.getElementById('m-fr').addEventListener('change',renderMList);
+document.getElementById('m-ft').addEventListener('change',renderMList);
+
+function renderMList(){
+  rebuildMFT();
+  var fr=document.getElementById('m-fr').value,ft=document.getElementById('m-ft').value;
+  var list=matLogs.filter(function(d){return(!fr||d.result===fr)&&(!ft||d.type===ft);});
+  document.getElementById('m-total').textContent=matLogs.length;
+  document.getElementById('m-accept-n').textContent=matLogs.filter(function(d){return d.result==='accept';}).length;
+  document.getElementById('m-reject-n').textContent=matLogs.filter(function(d){return d.result==='reject';}).length;
+  var el=document.getElementById('material-list');el.innerHTML='';
+  if(!list.length){el.innerHTML='<div class="empty">目前沒有驗收記錄</div>';return;}
+  list.forEach(function(d){
+    var card=document.createElement('div');card.className='rcard cm-card';
+    var hdr=document.createElement('div');hdr.className='rhdr';
+    var left=document.createElement('div');
+    var tt=document.createElement('div');tt.className='rtitle';tt.textContent=d.name;
+    var mt=document.createElement('div');mt.className='rmeta';mt.textContent=d.type+(d.qty?' ・ '+d.qty:'')+(d.vendor?' ・ '+d.vendor:'')+' ・ '+d.createdAt;
+    left.appendChild(tt);left.appendChild(mt);
+    var bdg=document.createElement('span');bdg.className='badge '+mResBadge(d.result);bdg.textContent=mResLabel(d.result);
+    hdr.appendChild(left);hdr.appendChild(bdg);card.appendChild(hdr);
+    if(d.desc){var dm=document.createElement('div');dm.style.cssText='font-size:13px;color:#666;margin:5px 0 8px;';dm.textContent=d.desc;card.appendChild(dm);}
+    if((d.photos||[]).length){card.appendChild(mkPhlbl('驗收照片','#27AE60'));card.appendChild(mkSPhRow(d.photos));}
+    var ar=document.createElement('div');ar.className='ar';
+    (function(id,name){var b=document.createElement('button');b.className='abtn';b.style.color='#C0392B';b.textContent='刪除';b.addEventListener('click',function(){dlg('確認刪除','確定刪除「'+name+'」驗收記錄？','確定刪除','#C0392B',function(){matLogs=matLogs.filter(function(x){return x.id!==id;});saveM();toast('已刪除');renderMList();});});ar.appendChild(b);})(d.id,d.name);
+    card.appendChild(ar);el.appendChild(card);
+  });
+}
+
+document.getElementById('m-word').addEventListener('click',function(){
+  if(!matLogs.length){toast('⚠️ 沒有驗收記錄');return;}
+  var proj=document.getElementById('proj-name').value||'材料驗收報告',mgr=document.getElementById('proj-mgr').value||'';
+  var ac=matLogs.filter(function(d){return d.result==='accept';}).length,rj=matLogs.filter(function(d){return d.result==='reject';}).length;
+  var rows=matLogs.map(function(d,i){var rc=d.result==='accept'?'#27AE60':d.result==='partial'?'#E67E22':'#C0392B',rb=d.result==='accept'?'#EAF5EA':d.result==='partial'?'#FEF3E2':'#FDECEA';var ph='';if((d.photos||[]).length){ph='<tr><td colspan="2" style="padding:8px;"><div style="display:flex;flex-wrap:wrap;gap:8px;">'+(d.photos||[]).map(function(p){return'<img src="'+p+'" style="height:8cm;width:auto;max-width:10cm;object-fit:cover;border-radius:4px;border:1px solid #ddd;">';}).join('')+'</div></td></tr>';}return'<table style="width:100%;border-collapse:collapse;margin-bottom:18px;page-break-inside:avoid;border:1px solid #ccc;"><tr style="background:#27AE60;"><td colspan="2" style="padding:8px 10px;color:#fff;font-weight:700;font-size:13px;">'+(i+1)+'. '+esc(d.name)+'<span style="float:right;background:'+rb+';color:'+rc+';padding:2px 9px;border-radius:999px;font-size:11px;">'+mResLabel(d.result)+'</span></td></tr><tr style="background:#f5f5f5;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;width:70px;">類型</td><td style="padding:6px 10px;font-size:12px;">'+esc(d.type)+'</td></tr>'+(d.qty?'<tr><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">數量規格</td><td style="padding:6px 10px;font-size:12px;">'+esc(d.qty)+'</td></tr>':'')+(d.vendor?'<tr style="background:#f5f5f5;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">廠商</td><td style="padding:6px 10px;font-size:12px;">'+esc(d.vendor)+'</td></tr>':'')+'<tr><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">驗收日期</td><td style="padding:6px 10px;font-size:12px;">'+d.createdAt+'</td></tr>'+(d.desc?'<tr style="background:#f9f9f9;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">備註</td><td style="padding:6px 10px;font-size:12px;">'+esc(d.desc)+'</td></tr>':'')+ph+'</table>';}).join('');
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>材料驗收報告</title><style>@page{size:A4;margin:18mm 15mm;}body{font-family:"Arial","微軟正黑體",sans-serif;font-size:13px;color:#111;}@media print{body{margin:0;}}</style></head><body><div style="border-bottom:3px solid #27AE60;padding-bottom:10px;margin-bottom:14px;"><div style="font-size:20px;font-weight:700;color:#27AE60;">'+esc(proj)+'</div><div style="font-size:12px;color:#888;margin-top:4px;">工地主任：'+esc(mgr)+'　匯出日期：'+todayStr()+'　共 '+matLogs.length+' 筆</div></div><table style="width:100%;border-collapse:collapse;margin-bottom:14px;"><tr><td style="padding:10px;text-align:center;background:#F5F5F5;border:1px solid #ddd;"><div style="font-size:22px;font-weight:700;">'+matLogs.length+'</div><div style="font-size:11px;color:#666;">共計</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#EAF5EA;border:1px solid #A9DFBF;"><div style="font-size:22px;font-weight:700;color:#27AE60;">'+ac+'</div><div style="font-size:11px;color:#666;">合格</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#FDECEA;border:1px solid #F1948A;"><div style="font-size:22px;font-weight:700;color:#C0392B;">'+rj+'</div><div style="font-size:11px;color:#666;">退料</div></td></tr></table>'+rows+'</body></html>';
+  dlBlob(new Blob([html],{type:'application/vnd.ms-word;charset=utf-8'}),'材料驗收報告_'+todayStr().replace(/\//g,'')+'.doc');toast('✅ 驗收報告已下載');
+});
+
+// ══════════════════════════════
+// 備份 / 還原
+// ══════════════════════════════
+document.getElementById('btn-backup').addEventListener('click',function(){
+  var data={defects:defects,safetyLogs:safetyLogs,matLogs:matLogs,dTypes:dTypes,sTypes:sTypes,mTypes:mTypes,exportedAt:todayStr()};
+  dlBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'工地備份_'+todayStr().replace(/\//g,'')+'.json');toast('✅ 備份已下載');
+});
+document.getElementById('restore-inp').addEventListener('change',function(){
+  var f=this.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(e){
+    try{
+      var data=JSON.parse(e.target.result);
+      dlg('確認還原','確定還原備份？目前資料將被覆蓋。','確定還原','#185FA5',function(){
+        if(data.defects)defects=data.defects;
+        if(data.safetyLogs)safetyLogs=data.safetyLogs;
+        if(data.matLogs)matLogs=data.matLogs;
+        if(data.dTypes){dTypes=data.dTypes;saveDT();}
+        if(data.sTypes){sTypes=data.sTypes;saveST();}
+        if(data.mTypes){mTypes=data.mTypes;saveMT();}
+        saveD();saveS();saveM();renderDList();toast('✅ 備份已還原');
+      });
+    }catch(e){toast('⚠️ 讀取備份失敗');}
+  };r.readAsText(f);this.value='';
+});
+
+// ══════════════════════════════
+// 初始化
+// ══════════════════════════════
+rebuildDFT();rebuildSFT();rebuildMFT();updateDExp();syncMRes();syncSRes();
+switchMod('defect');
+
+// 自動讀取同資料夾下的備份檔
+fetch('工地備份_20260504.json')
+  .then(function(res){ if(res.ok) return res.json(); throw new Error(); })
+  .then(function(data){
+    if(defects.length === 0 && safetyLogs.length === 0 && matLogs.length === 0) {
+      if(data.defects)defects=data.defects;
+      if(data.safetyLogs)safetyLogs=data.safetyLogs;
+      if(data.matLogs)matLogs=data.matLogs;
+      if(data.dTypes){dTypes=data.dTypes;saveDT();}
+      if(data.sTypes){sTypes=data.sTypes;saveST();}
+      if(data.mTypes){mTypes=data.mTypes;saveMT();}
+      saveD();saveS();saveM();
+      renderDList();
+      toast('✅ 已自動讀取同資料夾備份');
+    }
+  })
+  .catch(function(e){ console.log('無備份檔或讀取失敗'); });
+</script>
+</body>
+</html>
