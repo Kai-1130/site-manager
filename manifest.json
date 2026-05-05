@@ -1,0 +1,16 @@
+{
+  "name": "工地管理",
+  "short_name": "工地管理",
+  "description": "工地管理應用程式 (缺失、工安、材料)",
+  "start_url": "./工地管理.html",
+  "display": "standalone",
+  "background_color": "#f2f2f7",
+  "theme_color": "#185FA5",
+  "icons": [
+    {
+      "src": "logo.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png"
+    }
+  ]
+}
