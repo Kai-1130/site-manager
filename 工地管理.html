@@ -359,7 +359,7 @@ input[type="file"] { display:none; }
       <button class="exp-btn" id="p-word" style="margin-top:8px;"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>匯出進度報告（Word）</button>
     </div>
   </div>
-  <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">v1.2.0</div>
+  <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">v1.2.1</div>
 </div>
 
 
@@ -383,6 +383,7 @@ var dType = dTypes[0], dPri = 'urgent', dPh = [];
 var sType = sTypes[0], sRes = 'pass',   sPh = [];
 var mType = mTypes[0], mRes = 'accept', mPh = [];
 var dEditing = null;
+var pEditing = null;
 
 var PL = {urgent:'🔴 緊急',high:'🟠 高',normal:'🟢 一般',low:'⚪ 低'};
 var PC = {urgent:'#C0392B',high:'#E67E22',normal:'#27AE60',low:'#888'};
@@ -1036,8 +1037,41 @@ document.getElementById('p-submit').addEventListener('click',function(){
 });
 
 document.getElementById('p-fs').addEventListener('change',renderPList);
-document.getElementById('p-word').addEventListener('click',function(){toast('此功能建置中');});
-
+document.getElementById('p-word').addEventListener('click',function(){
+  if(!progLogs.length){toast('⚠️ 沒有進度記錄');return;}
+  var validLogs = progLogs.filter(function(p){return p.startDate&&p.endDate;});
+  if(!validLogs.length){toast('⚠️ 記錄中沒有完整的日期');return;}
+  var minDate=new Date('2099-12-31'), maxDate=new Date('1970-01-01');
+  validLogs.forEach(function(p){
+    var sd=new Date(p.startDate), ed=new Date(p.endDate);
+    if(sd<minDate)minDate=sd;
+    if(ed>maxDate)maxDate=ed;
+  });
+  var totalDays = (maxDate - minDate) / (1000*60*60*24) + 1;
+  if(totalDays<1)totalDays=1;
+  
+  var rows = validLogs.map(function(p, i){
+    var sd = new Date(p.startDate), ed = new Date(p.endDate);
+    var offsetDays = (sd - minDate) / (1000*60*60*24);
+    var durationDays = (ed - sd) / (1000*60*60*24) + 1;
+    var leftPct = (offsetDays / totalDays) * 100;
+    var widthPct = (durationDays / totalDays) * 100;
+    
+    var progWidth = p.progress + '%';
+    var barColor = '#16A085';
+    var st = getPStatus(p);
+    if(st==='delay') barColor = '#C0392B';
+    if(st==='done') barColor = '#27AE60';
+    if(st==='pending') barColor = '#bbb';
+    
+    return '<tr style="border-bottom:1px solid #eee;"><td style="padding:10px;font-size:13px;width:160px;font-weight:600;vertical-align:middle;word-break:break-all;">'+esc(p.name)+'<div style="font-size:11px;color:#888;font-weight:normal;">'+p.startDate+'~'+p.endDate+'</div></td><td style="padding:10px;vertical-align:middle;"><div style="position:relative;width:100%;height:24px;background:#f5f5f5;border-radius:4px;"><div style="position:absolute;left:'+leftPct+'%;width:'+widthPct+'%;height:100%;background:rgba(0,0,0,0.05);border-radius:4px;border:1px solid #ddd;box-sizing:border-box;"><div style="width:'+progWidth+';height:100%;background:'+barColor+';border-radius:3px;display:flex;align-items:center;padding-left:6px;font-size:11px;color:#fff;font-weight:bold;white-space:nowrap;overflow:hidden;">'+(p.progress>0?p.progress+'%':'')+'</div></div></div></td></tr>';
+  }).join('');
+  
+  var proj=document.getElementById('proj-name') ? (document.getElementById('proj-name').value||'工程進度') : '工程進度';
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>工程進度圖表</title><style>@page{size:A4 landscape;margin:15mm;}body{font-family:"Arial","微軟正黑體",sans-serif;font-size:13px;color:#111;}@media print{body{margin:0;} .no-print{display:none;}}</style></head><body><div class="no-print" style="background:#FFF3CD;color:#856404;padding:12px;text-align:center;margin-bottom:20px;border-radius:8px;font-weight:bold;">💡 提示：按 Ctrl+P (或 Cmd+P) 可以將此圖表列印成 PDF 檔案！</div><div style="border-bottom:3px solid #16A085;padding-bottom:10px;margin-bottom:20px;"><div style="font-size:20px;font-weight:700;color:#16A085;">'+esc(proj)+' - 進度甘特圖</div><div style="font-size:12px;color:#888;margin-top:4px;">匯出日期：'+todayStr()+'　總期程：'+minDate.toISOString().split('T')[0]+' ~ '+maxDate.toISOString().split('T')[0]+' ('+totalDays+'天)</div></div><table style="width:100%;border-collapse:collapse;table-layout:fixed;">'+rows+'</table></body></html>';
+  dlBlob(new Blob([html],{type:'text/html;charset=utf-8'}),'進度圖表_'+todayStr().replace(/\//g,'')+'.html');
+  toast('✅ 圖表已下載 (HTML格式)');
+});
 function getPStatus(p) {
   if (p.progress === 100) return 'done';
   var today = new Date().toISOString().split('T')[0];
@@ -1094,6 +1128,46 @@ function renderPList(){
     pw.appendChild(pf);
     card.appendChild(pt);
     card.appendChild(pw);
+    var isEd = pEditing === p.id;
+
+    if(isEd){
+      var ep=document.createElement('div');ep.className='ep';
+
+      var nl=document.createElement('span');nl.className='ep-lbl';nl.textContent='工程項目';
+      var ni=document.createElement('input');ni.type='text';ni.value=p.name;
+      ep.appendChild(nl);ep.appendChild(ni);
+
+      var cl=document.createElement('span');cl.className='ep-lbl';cl.textContent='負責廠商';
+      var ci=document.createElement('input');ci.type='text';ci.value=p.contractor||'';
+      ep.appendChild(cl);ep.appendChild(ci);
+
+      var dr=document.createElement('div');dr.style.cssText='display:flex;gap:10px;';
+      var sdWrap=document.createElement('div');sdWrap.style.flex='1';
+      var sl=document.createElement('span');sl.className='ep-lbl';sl.textContent='開始';
+      var si=document.createElement('input');si.type='date';si.value=p.startDate;
+      sdWrap.appendChild(sl);sdWrap.appendChild(si);
+      var edWrap=document.createElement('div');edWrap.style.flex='1';
+      var elbl=document.createElement('span');elbl.className='ep-lbl';elbl.textContent='預計完工';
+      var ei=document.createElement('input');ei.type='date';ei.value=p.endDate;
+      edWrap.appendChild(elbl);edWrap.appendChild(ei);
+      dr.appendChild(sdWrap);dr.appendChild(edWrap);
+      ep.appendChild(dr);
+
+      var dl=document.createElement('span');dl.className='ep-lbl';dl.textContent='備註';
+      var ta=document.createElement('textarea');ta.value=p.desc||'';
+      ep.appendChild(dl);ep.appendChild(ta);
+
+      var saveBtn=document.createElement('button');saveBtn.className='ep-save';saveBtn.style.background='#16A085';saveBtn.textContent='儲存';
+      (function(id,n_inp,c_inp,s_inp,e_inp,d_ta){
+        saveBtn.addEventListener('click',function(){
+          var nn=n_inp.value.trim();if(!nn){toast('⚠️ 項目不可空白');return;}
+          progLogs=progLogs.map(function(x){return x.id===id?Object.assign({},x,{name:nn,contractor:c_inp.value.trim(),startDate:s_inp.value,endDate:e_inp.value,desc:d_ta.value.trim()}):x;});
+          saveP();pEditing=null;toast('✅ 已儲存');renderPList();
+        });
+      })(p.id,ni,ci,si,ei,ta);
+      ep.appendChild(saveBtn);
+      card.appendChild(ep);
+    }
 
     var ar=document.createElement('div');ar.className='ar';
     var sld=document.createElement('input');sld.type='range';sld.min='0';sld.max='100';sld.value=p.progress;
@@ -1104,6 +1178,12 @@ function renderPList(){
       saveP();renderPList();
     });
     
+    (function(id){
+      var b=document.createElement('button');b.className='abtn';b.style.color='#444';b.style.flex='none';b.style.padding='4px 12px';b.textContent=isEd?'取消':'編輯';
+      b.addEventListener('click',function(){pEditing=(pEditing===id)?null:id;renderPList();});
+      ar.appendChild(b);
+    })(p.id);
+
     var dbBtn=document.createElement('button');dbBtn.className='abtn';dbBtn.style.color='#C0392B';dbBtn.style.flex='none';dbBtn.style.padding='4px 12px';dbBtn.textContent='刪除';
     dbBtn.addEventListener('click',function(){
       dlg('確認刪除','確定刪除「'+p.name+'」進度記錄嗎？','確定刪除','#C0392B',function(){
