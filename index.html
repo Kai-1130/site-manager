@@ -22,16 +22,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #
 .app { max-width: 480px; margin: 0 auto; padding: 12px; }
 .header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .logo { width: 38px; height: 38px; background: #185FA5; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.module-bar { display: grid; grid-template-columns: repeat(3,1fr); gap: 6px; margin-bottom: 14px; }
-.module-btn { padding: 10px 4px; border: 2px solid #ddd; border-radius: 12px; background: #fff; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; color: #666; font-family: inherit; }
+.module-bar { display: grid; grid-template-columns: repeat(4,1fr); gap: 4px; margin-bottom: 14px; }
+.module-btn { padding: 8px 2px; border: 2px solid #ddd; border-radius: 10px; background: #fff; font-size: 11px; font-weight: 600; cursor: pointer; text-align: center; color: #666; font-family: inherit; white-space: nowrap; }
 .module-btn.mod-d { border-color:#185FA5; background:#185FA5; color:#fff; }
 .module-btn.mod-s { border-color:#E67E22; background:#E67E22; color:#fff; }
 .module-btn.mod-m { border-color:#27AE60; background:#27AE60; color:#fff; }
+.module-btn.mod-p { border-color:#16A085; background:#16A085; color:#fff; }
 .tab-bar { display: flex; gap: 6px; margin-bottom: 16px; }
 .tab { flex:1; padding:9px 4px; border:1px solid #ccc; border-radius:10px; background:#fff; font-size:12px; cursor:pointer; text-align:center; color:#666; font-family:inherit; }
 .tab.td { background:#185FA5; color:#fff; border-color:#185FA5; }
 .tab.ts { background:#E67E22; color:#fff; border-color:#E67E22; }
 .tab.tm { background:#27AE60; color:#fff; border-color:#27AE60; }
+.tab.tp { background:#16A085; color:#fff; border-color:#16A085; }
 .section { display:none; }
 .card { background:#fff; border-radius:14px; padding:14px; margin-bottom:12px; box-shadow:0 1px 4px rgba(0,0,0,0.07); }
 .field { margin-bottom:13px; }
@@ -59,7 +61,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #
 .photo-thumb { width:88px; height:88px; position:relative; cursor:pointer; flex-shrink:0; }
 .photo-thumb img { width:100%; height:100%; object-fit:cover; display:block; border-radius:10px; border:1px solid #ddd; }
 .submit-btn { width:100%; padding:13px; color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:500; cursor:pointer; margin-top:4px; font-family:inherit; }
-.btn-d { background:#185FA5; } .btn-s { background:#E67E22; } .btn-m { background:#27AE60; }
+.btn-d { background:#185FA5; } .btn-s { background:#E67E22; } .btn-m { background:#27AE60; } .btn-p { background:#16A085; }
 .rcard { background:#fff; border-radius:14px; padding:13px; margin-bottom:10px; box-shadow:0 1px 4px rgba(0,0,0,0.07); border-left:4px solid #ddd; }
 .rcard.pri-urgent { border-left-color:#C0392B; }
 .rcard.pri-high { border-left-color:#E67E22; }
@@ -67,6 +69,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #
 .rcard.pri-low { border-left-color:#bbb; }
 .rcard.cs-card { border-left-color:#E67E22; }
 .rcard.cm-card { border-left-color:#27AE60; }
+.rcard.cp-card { border-left-color:#16A085; }
+.prog-wrap { width:100%; height:8px; background:#eee; border-radius:4px; overflow:hidden; margin-top:10px; position:relative; }
+.prog-fill { height:100%; background:#16A085; transition:width 0.3s; }
+.prog-header { display:flex; justify-content:space-between; font-size:11px; margin-top:10px; color:#666; font-weight:600; }
 .rhdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:6px; gap:8px; }
 .rtitle { font-size:15px; font-weight:600; color:#111; }
 .badge { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:600; white-space:nowrap; flex-shrink:0; }
@@ -149,6 +155,7 @@ input[type="file"] { display:none; }
     <button class="module-btn mod-d" id="mod-defect">📋 缺失管理</button>
     <button class="module-btn" id="mod-safety">🦺 工安巡檢</button>
     <button class="module-btn" id="mod-material">📦 材料驗收</button>
+    <button class="module-btn" id="mod-progress">📅 工程進度</button>
   </div>
 
   <!-- ══ 缺失管理 ══ -->
@@ -316,7 +323,43 @@ input[type="file"] { display:none; }
       <button class="exp-btn" id="m-word" style="margin-top:8px;"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>匯出材料驗收報告（Word）</button>
     </div>
   </div>
-  <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">v1.1.2</div>
+
+  <!-- ══ 工程進度 ══ -->
+  <div id="module-progress" style="display:none;">
+    <div class="tab-bar">
+      <div class="tab tp" id="pt-list-btn">進度總覽</div>
+      <div class="tab" id="pt-add-btn">新增進度</div>
+    </div>
+    <div class="section" id="pt-add">
+      <div class="card">
+        <div class="field"><label>工程項目</label><input type="text" id="p-name" placeholder="例：3F 鋼筋綁紮"></div>
+        <div class="field"><label>負責單位 / 廠商</label><input type="text" id="p-contractor" placeholder="例：XX工程行"></div>
+        <div style="display:flex;gap:10px;">
+          <div class="field" style="flex:1;"><label>開始日期</label><input type="date" id="p-start"></div>
+          <div class="field" style="flex:1;"><label>預計完工</label><input type="date" id="p-end"></div>
+        </div>
+        <div class="field">
+          <label>目前進度 (<span id="p-prog-val">0</span>%)</label>
+          <input type="range" id="p-prog" min="0" max="100" value="0" style="width:100%;margin-top:8px;">
+        </div>
+        <div class="field"><label>備註</label><textarea id="p-desc" placeholder="備註說明..."></textarea></div>
+        <button class="submit-btn btn-p" id="p-submit">儲存進度記錄</button>
+      </div>
+    </div>
+    <div class="section" id="pt-list">
+      <div class="stats">
+        <div class="stat"><div class="stat-num" id="p-total">0</div><div class="stat-label">總計</div></div>
+        <div class="stat"><div class="stat-num" style="color:#185FA5" id="p-ongoing">0</div><div class="stat-label">施工中</div></div>
+        <div class="stat"><div class="stat-num" style="color:#C0392B" id="p-delay">0</div><div class="stat-label">延遲中</div></div>
+      </div>
+      <div class="filter-row">
+        <select id="p-fs"><option value="">全部狀態</option><option value="ongoing">🔵 施工中</option><option value="done">✅ 已完工</option><option value="delay">⚠️ 延遲中</option><option value="pending">⏳ 未開始</option></select>
+      </div>
+      <div id="progress-list"></div>
+      <button class="exp-btn" id="p-word" style="margin-top:8px;"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>匯出進度報告（Word）</button>
+    </div>
+  </div>
+  <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">v1.2.0</div>
 </div>
 
 
@@ -330,6 +373,7 @@ input[type="file"] { display:none; }
 var defects    = JSON.parse(localStorage.getItem('defects')    || '[]');
 var safetyLogs = JSON.parse(localStorage.getItem('safetyLogs') || '[]');
 var matLogs    = JSON.parse(localStorage.getItem('matLogs')    || '[]');
+var progLogs   = JSON.parse(localStorage.getItem('progLogs')   || '[]');
 // 所有類型都存在 customTypes，預設類型也一樣，差別只是刪除後回到第一個
 var dTypes = JSON.parse(localStorage.getItem('dTypes') || JSON.stringify(['二丁掛','地磚','泥作','結構','水電','裝修','安全','其他']));
 var sTypes = JSON.parse(localStorage.getItem('sTypes') || JSON.stringify(['安全帽','安全網','施工架','圍欄','電氣安全','動火作業','個人防護']));
@@ -351,6 +395,7 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function saveD(){localStorage.setItem('defects',JSON.stringify(defects));}
 function saveS(){localStorage.setItem('safetyLogs',JSON.stringify(safetyLogs));}
 function saveM(){localStorage.setItem('matLogs',JSON.stringify(matLogs));}
+function saveP(){localStorage.setItem('progLogs',JSON.stringify(progLogs));}
 function saveDT(){localStorage.setItem('dTypes',JSON.stringify(dTypes));}
 function saveST(){localStorage.setItem('sTypes',JSON.stringify(sTypes));}
 function saveMT(){localStorage.setItem('mTypes',JSON.stringify(mTypes));}
@@ -429,17 +474,19 @@ function dlBlob(blob,name){var url=URL.createObjectURL(blob);var a=document.crea
 
 // ── 模組切換 ──
 function switchMod(mod){
-  ['defect','safety','material'].forEach(function(m){
+  ['defect','safety','material','progress'].forEach(function(m){
     document.getElementById('module-'+m).style.display=m===mod?'block':'none';
     document.getElementById('mod-'+m).className='module-btn'+(m===mod?' mod-'+m[0]:'');
   });
   if(mod==='defect'){renderDChips();switchDTab('list');}
   if(mod==='safety'){renderSChips();switchSTab('form');}
   if(mod==='material'){renderMChips();switchMTab('add');}
+  if(mod==='progress'){switchPTab('list');}
 }
 document.getElementById('mod-defect').addEventListener('click',function(){switchMod('defect');});
 document.getElementById('mod-safety').addEventListener('click',function(){switchMod('safety');});
 document.getElementById('mod-material').addEventListener('click',function(){switchMod('material');});
+document.getElementById('mod-progress').addEventListener('click',function(){switchMod('progress');});
 
 // ── Chip 工具 ──
 function mkChip(text, isActive, activeClass, onClick, onDel){
@@ -952,11 +999,132 @@ document.getElementById('m-word').addEventListener('click',function(){
   dlBlob(new Blob([html],{type:'application/vnd.ms-word;charset=utf-8'}),'材料驗收報告_'+todayStr().replace(/\//g,'')+'.doc');toast('✅ 驗收報告已下載');
 });
 
+
 // ══════════════════════════════
+// 工程進度
+// ══════════════════════════════
+function switchPTab(t){
+  ['list','add'].forEach(function(n){document.getElementById('pt-'+n+'-btn').className='tab'+(t===n?' tp':'');document.getElementById('pt-'+n).style.display=t===n?'block':'none';});
+  if(t==='list')renderPList();
+  if(t==='add'){
+    document.getElementById('p-prog').addEventListener('input', function(){
+      document.getElementById('p-prog-val').textContent = this.value;
+    });
+  }
+}
+document.getElementById('pt-add-btn').addEventListener('click',function(){switchPTab('add');});
+document.getElementById('pt-list-btn').addEventListener('click',function(){switchPTab('list');});
+
+document.getElementById('p-submit').addEventListener('click',function(){
+  var name=document.getElementById('p-name').value.trim();
+  var ctor=document.getElementById('p-contractor').value.trim();
+  var sd=document.getElementById('p-start').value;
+  var ed=document.getElementById('p-end').value;
+  var pg=parseInt(document.getElementById('p-prog').value, 10)||0;
+  if(!name){toast('⚠️ 請填寫工程項目');return;}
+  if(!sd||!ed){toast('⚠️ 請選擇日期');return;}
+  if(sd>ed){toast('⚠️ 開始日期不可大於預計完工日期');return;}
+  
+  progLogs.unshift({id:Date.now(),name:name,contractor:ctor,startDate:sd,endDate:ed,progress:pg,desc:document.getElementById('p-desc').value.trim(),createdAt:todayStr()});
+  saveP();
+  document.getElementById('p-name').value='';
+  document.getElementById('p-contractor').value='';
+  document.getElementById('p-desc').value='';
+  document.getElementById('p-prog').value='0';
+  document.getElementById('p-prog-val').textContent='0';
+  toast('✅ 工程進度已儲存');switchPTab('list');
+});
+
+document.getElementById('p-fs').addEventListener('change',renderPList);
+document.getElementById('p-word').addEventListener('click',function(){toast('此功能建置中');});
+
+function getPStatus(p) {
+  if (p.progress === 100) return 'done';
+  var today = new Date().toISOString().split('T')[0];
+  if (p.progress < 100 && today > p.endDate) return 'delay';
+  if (p.progress === 0 && today < p.startDate) return 'pending';
+  return 'ongoing';
+}
+
+function renderPList(){
+  var fs=document.getElementById('p-fs').value;
+  var list=progLogs.filter(function(p){return(!fs||getPStatus(p)===fs);});
+  
+  var order = {delay:0, ongoing:1, pending:2, done:3};
+  list.sort(function(a,b){
+    var sa = getPStatus(a), sb = getPStatus(b);
+    if (sa !== sb) return order[sa] - order[sb];
+    return new Date(a.startDate) - new Date(b.startDate);
+  });
+
+  document.getElementById('p-total').textContent=progLogs.length;
+  document.getElementById('p-ongoing').textContent=progLogs.filter(function(p){return getPStatus(p)==='ongoing';}).length;
+  document.getElementById('p-delay').textContent=progLogs.filter(function(p){return getPStatus(p)==='delay';}).length;
+  
+  var el=document.getElementById('progress-list');el.innerHTML='';
+  if(!list.length){el.innerHTML='<div class="empty">目前沒有進度記錄</div>';return;}
+
+  list.forEach(function(p){
+    var st = getPStatus(p);
+    var stTxt = {delay:'⚠️ 延遲中', ongoing:'🔵 施工中', pending:'⏳ 未開始', done:'✅ 已完工'}[st];
+    var stBg = {delay:'#FDECEA', ongoing:'#EEF5FC', pending:'#F5F5F5', done:'#EAF5EA'}[st];
+    var stCol = {delay:'#C0392B', ongoing:'#185FA5', pending:'#666', done:'#27AE60'}[st];
+
+    var card=document.createElement('div');card.className='rcard cp-card';
+    if(st==='delay') card.style.borderLeftColor = '#C0392B';
+    if(st==='done') card.style.borderLeftColor = '#27AE60';
+
+    var hdr=document.createElement('div');hdr.className='rhdr';
+    var left=document.createElement('div');
+    var tt=document.createElement('div');tt.className='rtitle';tt.textContent=p.name;
+    var mt=document.createElement('div');mt.className='rmeta';mt.textContent=(p.contractor?p.contractor+' ・ ':'')+p.startDate+' ~ '+p.endDate;
+    left.appendChild(tt);left.appendChild(mt);
+    var bdg=document.createElement('span');bdg.className='badge';bdg.style.background=stBg;bdg.style.color=stCol;bdg.textContent=stTxt;
+    hdr.appendChild(left);hdr.appendChild(bdg);card.appendChild(hdr);
+
+    if(p.desc){var dm=document.createElement('div');dm.style.cssText='font-size:13px;color:#666;margin:5px 0 8px;';dm.textContent=p.desc;card.appendChild(dm);}
+
+    var pw=document.createElement('div');pw.className='prog-wrap';
+    var pf=document.createElement('div');pf.className='prog-fill';pf.style.width=p.progress+'%';
+    if(st==='delay') pf.style.background='#C0392B';
+    if(st==='done') pf.style.background='#27AE60';
+    var pt=document.createElement('div');pt.className='prog-header';
+    pt.innerHTML='<span>進度</span><span>'+p.progress+'%</span>';
+    
+    pw.appendChild(pf);
+    card.appendChild(pt);
+    card.appendChild(pw);
+
+    var ar=document.createElement('div');ar.className='ar';
+    var sld=document.createElement('input');sld.type='range';sld.min='0';sld.max='100';sld.value=p.progress;
+    sld.style.flex='1';sld.style.marginTop='4px';
+    sld.addEventListener('change', function(){
+      var val = parseInt(this.value, 10);
+      progLogs=progLogs.map(function(x){return x.id===p.id?Object.assign({},x,{progress:val}):x;});
+      saveP();renderPList();
+    });
+    
+    var dbBtn=document.createElement('button');dbBtn.className='abtn';dbBtn.style.color='#C0392B';dbBtn.style.flex='none';dbBtn.style.padding='4px 12px';dbBtn.textContent='刪除';
+    dbBtn.addEventListener('click',function(){
+      dlg('確認刪除','確定刪除「'+p.name+'」進度記錄嗎？','確定刪除','#C0392B',function(){
+        progLogs=progLogs.filter(function(x){return x.id!==p.id;});saveP();toast('已刪除');renderPList();
+      });
+    });
+
+    ar.appendChild(sld);
+    ar.appendChild(dbBtn);
+    card.appendChild(ar);
+
+    el.appendChild(card);
+  });
+}
+
+// ══════════════════════════════
+
 // 備份 / 還原
 // ══════════════════════════════
 document.getElementById('btn-backup').addEventListener('click',function(){
-  var data={defects:defects,safetyLogs:safetyLogs,matLogs:matLogs,dTypes:dTypes,sTypes:sTypes,mTypes:mTypes,exportedAt:todayStr()};
+  var data={defects:defects,safetyLogs:safetyLogs,matLogs:matLogs,progLogs:progLogs,dTypes:dTypes,sTypes:sTypes,mTypes:mTypes,exportedAt:todayStr()};
   dlBlob(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}),'工地備份_'+todayStr().replace(/\//g,'')+'.json');toast('✅ 備份已下載');
 });
 document.getElementById('restore-inp').addEventListener('change',function(){
@@ -969,10 +1137,11 @@ document.getElementById('restore-inp').addEventListener('change',function(){
         if(data.defects)defects=data.defects;
         if(data.safetyLogs)safetyLogs=data.safetyLogs;
         if(data.matLogs)matLogs=data.matLogs;
+        if(data.progLogs)progLogs=data.progLogs;
         if(data.dTypes){dTypes=data.dTypes;saveDT();}
         if(data.sTypes){sTypes=data.sTypes;saveST();}
         if(data.mTypes){mTypes=data.mTypes;saveMT();}
-        saveD();saveS();saveM();renderDList();toast('✅ 備份已還原');
+        saveD();saveS();saveM();saveP();renderDList();toast('✅ 備份已還原');
       });
     }catch(e){toast('⚠️ 讀取備份失敗');}
   };r.readAsText(f);this.value='';
