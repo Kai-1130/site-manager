@@ -370,7 +370,7 @@ input[type="file"] { display:none; }
       <button class="exp-btn" id="p-word" style="margin-top:8px;"><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>匯出進度報告（Word）</button>
     </div>
   </div>
-  <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">v1.4.1</div>
+  <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">v1.5.0</div>
 </div>
 
 
@@ -404,13 +404,13 @@ var PO = {urgent:0,high:1,normal:2,low:3};
 function getPri(d){var p=d&&d.priority;return(p&&PL[p])?p:'normal';}
 function todayStr(){var d=new Date();return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+('0'+d.getDate()).slice(-2);}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function saveD(){localStorage.setItem('defects',JSON.stringify(defects));}
-function saveS(){localStorage.setItem('safetyLogs',JSON.stringify(safetyLogs));}
-function saveM(){localStorage.setItem('matLogs',JSON.stringify(matLogs));}
-function saveP(){localStorage.setItem('progLogs',JSON.stringify(progLogs));}
-function saveDT(){localStorage.setItem('dTypes',JSON.stringify(dTypes));}
-function saveST(){localStorage.setItem('sTypes',JSON.stringify(sTypes));}
-function saveMT(){localStorage.setItem('mTypes',JSON.stringify(mTypes));}
+function saveD(){localStorage.setItem('defects',JSON.stringify(defects)); syncIDB();}
+function saveS(){localStorage.setItem('safetyLogs',JSON.stringify(safetyLogs)); syncIDB();}
+function saveM(){localStorage.setItem('matLogs',JSON.stringify(matLogs)); syncIDB();}
+function saveP(){localStorage.setItem('progLogs',JSON.stringify(progLogs)); syncIDB();}
+function saveDT(){localStorage.setItem('dTypes',JSON.stringify(dTypes)); syncIDB();}
+function saveST(){localStorage.setItem('sTypes',JSON.stringify(sTypes)); syncIDB();}
+function saveMT(){localStorage.setItem('mTypes',JSON.stringify(mTypes)); syncIDB();}
 
 
 // ── Toast ──
@@ -428,6 +428,53 @@ function dlg(title,msg,okTxt,okColor,cb){
 }
 document.getElementById('dlg-no').addEventListener('click',function(){document.getElementById('dlg').classList.remove('open');dlgCb=null;});
 document.getElementById('dlg-yes').addEventListener('click',function(){document.getElementById('dlg').classList.remove('open');if(dlgCb){dlgCb();dlgCb=null;}});
+
+// ── 雙重保險 (IndexedDB) ──
+var db;
+function initIDB() {
+  if(!window.indexedDB) return;
+  var req = window.indexedDB.open("SiteManagerDB", 1);
+  req.onupgradeneeded = function(e) {
+    var d = e.target.result;
+    if(!d.objectStoreNames.contains("backup")) d.createObjectStore("backup", { keyPath: "id" });
+  };
+  req.onsuccess = function(e) {
+    db = e.target.result;
+    checkIDBRecovery();
+  };
+}
+function syncIDB() {
+  if(!db) return;
+  try {
+    var tx = db.transaction("backup", "readwrite");
+    tx.objectStore("backup").put({ id: "main_data", defects: defects, safetyLogs: safetyLogs, matLogs: matLogs, progLogs: progLogs, dTypes: dTypes, sTypes: sTypes, mTypes: mTypes, ts: Date.now() });
+  } catch(e) {}
+}
+function checkIDBRecovery() {
+  var hasLocal = (defects.length>0 || safetyLogs.length>0 || matLogs.length>0 || progLogs.length>0);
+  if(hasLocal) { syncIDB(); return; }
+  try {
+    var tx = db.transaction("backup", "readonly");
+    var req = tx.objectStore("backup").get("main_data");
+    req.onsuccess = function() {
+      var d = req.result;
+      if(d && (d.defects.length>0 || d.safetyLogs.length>0 || d.matLogs.length>0 || d.progLogs.length>0)) {
+        defects = d.defects||[]; safetyLogs = d.safetyLogs||[]; matLogs = d.matLogs||[]; progLogs = d.progLogs||[];
+        if(d.dTypes) dTypes = d.dTypes; if(d.sTypes) sTypes = d.sTypes; if(d.mTypes) mTypes = d.mTypes;
+        localStorage.setItem('defects',JSON.stringify(defects));
+        localStorage.setItem('safetyLogs',JSON.stringify(safetyLogs));
+        localStorage.setItem('matLogs',JSON.stringify(matLogs));
+        localStorage.setItem('progLogs',JSON.stringify(progLogs));
+        localStorage.setItem('dTypes',JSON.stringify(dTypes));
+        localStorage.setItem('sTypes',JSON.stringify(sTypes));
+        localStorage.setItem('mTypes',JSON.stringify(mTypes));
+        dlg('自動救援成功','系統偵測到快取遺失，已從底層保險箱自動找回您的所有資料！','太棒了','#27AE60',function(){location.reload();});
+      }
+    };
+  } catch(e) {}
+}
+initIDB();
+
 
 // ── 燈箱 ──
 var lbArr=[],lbI=0;
