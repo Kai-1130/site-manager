@@ -1368,7 +1368,7 @@
           </svg>匯出進度報告（Word）</button>
       </div>
     </div>
-    <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">v1.5.3</div>
+    <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">v1.5.4</div>
   </div>
 
 
@@ -1641,7 +1641,8 @@
       defects.unshift({ id: Date.now(), location: loc, type: dType, priority: dPri, desc: document.getElementById('d-desc').value.trim(), photos: dPh.slice(), fixPhotos: [], status: 'pending', createdAt: todayStr() });
       saveD(); dPh.length = 0; document.getElementById('d-preview').innerHTML = '';
       document.getElementById('d-loc').value = ''; document.getElementById('d-desc').value = ''; document.getElementById('d-file').value = '';
-      dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); toast('✅ 缺失記錄已新增'); switchDTab('list');
+      dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); toast('✅ 缺失記錄已新增');
+      setTimeout(function () { switchDTab('list'); }, 150);
     });
 
     document.getElementById('d-fs').addEventListener('change', renderDList);
@@ -1950,7 +1951,8 @@
       safetyLogs.unshift({ id: Date.now(), location: loc, type: sType, desc: document.getElementById('s-desc').value.trim(), photos: sPh.slice(), result: sRes, createdAt: todayStr() });
       saveS(); sPh.length = 0; document.getElementById('s-preview').innerHTML = '';
       document.getElementById('s-loc').value = ''; document.getElementById('s-desc').value = ''; document.getElementById('s-file').value = '';
-      sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes(); toast('✅ 巡檢記錄已儲存'); switchSTab('hist');
+      sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes(); toast('✅ 巡檢記錄已儲存');
+      setTimeout(function () { switchSTab('hist'); }, 150);
     });
 
     document.getElementById('s-fr').addEventListener('change', renderSList);
@@ -2051,7 +2053,8 @@
       matLogs.unshift({ id: Date.now(), name: name, type: mType, qty: document.getElementById('m-qty').value.trim(), vendor: document.getElementById('m-vendor').value.trim(), desc: document.getElementById('m-desc').value.trim(), photos: mPh.slice(), result: mRes, createdAt: todayStr() });
       saveM(); mPh.length = 0; document.getElementById('m-preview').innerHTML = '';
       document.getElementById('m-name').value = ''; document.getElementById('m-qty').value = ''; document.getElementById('m-vendor').value = ''; document.getElementById('m-desc').value = ''; document.getElementById('m-file').value = '';
-      mType = mTypes[0] || ''; mRes = 'accept'; renderMChips(); syncMRes(); toast('✅ 驗收記錄已儲存'); switchMTab('list');
+      mType = mTypes[0] || ''; mRes = 'accept'; renderMChips(); syncMRes(); toast('✅ 驗收記錄已儲存');
+      setTimeout(function () { switchMTab('list'); }, 150);
     });
 
     document.getElementById('m-fr').addEventListener('change', renderMList);
@@ -2126,7 +2129,8 @@
       document.getElementById('p-desc').value = '';
       document.getElementById('p-prog').value = '0';
       document.getElementById('p-prog-val').textContent = '0';
-      toast('✅ 工程進度已儲存'); switchPTab('list');
+      toast('✅ 工程進度已儲存');
+      setTimeout(function () { switchPTab('list'); }, 150);
     });
 
     document.getElementById('p-fs').addEventListener('change', renderPList);
