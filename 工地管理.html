@@ -1444,7 +1444,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.0.3 (同步導航版) 
+      v2.0.4 (資料保護版) 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 重新載入 ]</span>
     </div>
   </div>
@@ -1537,11 +1537,11 @@
     setInterval(function() {
       if (!db) return;
       var currentLocal = (localStorage.getItem('defects') || '[]').length;
+      // 只有當記憶體中有資料，但 localStorage 被清空時才補回
       if (currentLocal < 10 && defects.length > 0) {
-        // 偵測到 localStorage 可能被清空，重新寫入
         saveD(); saveS(); saveM(); saveP();
       }
-    }, 10000);
+    }, 15000);
     
     // 立即啟動初始化
     initIDB();
@@ -1821,21 +1821,28 @@
       btn.textContent = '處理中...';
       toast('💾 正在儲存...');
 
-      defects.unshift({ id: Date.now(), location: loc, type: dType, priority: dPri, desc: document.getElementById('d-desc').value.trim(), photos: dPh.slice(), fixPhotos: [], status: 'pending', createdAt: todayStr() });
-      
-      // 給予 iOS 一點緩衝時間確保資料寫入與 UI 反應
-      setTimeout(function() {
+      try {
+        defects.unshift({ id: Date.now(), location: loc, type: dType, priority: dPri, desc: document.getElementById('d-desc').value.trim(), photos: dPh.slice(), fixPhotos: [], status: 'pending', createdAt: todayStr() });
         saveD(); 
-        dPh.length = 0; document.getElementById('d-preview').innerHTML = '';
-        document.getElementById('d-loc').value = ''; document.getElementById('d-desc').value = ''; document.getElementById('d-file').value = '';
-        dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); 
         
-        toast('✅ 缺失記錄已新增');
-        switchDTab('list');
+        // 分階段清理與跳轉
+        setTimeout(function() {
+          dPh.length = 0; 
+          var p = document.getElementById('d-preview'); if(p) p.innerHTML = '';
+          document.getElementById('d-loc').value = ''; document.getElementById('d-desc').value = ''; document.getElementById('d-file').value = '';
+          dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); 
+          
+          toast('✅ 缺失記錄已新增');
+          switchDTab('list');
+          btn.disabled = false;
+          btn.textContent = '新增缺失記錄';
+          setTimeout(function() { window.scrollTo(0,0); }, 100);
+        }, 300);
+      } catch (e) {
         btn.disabled = false;
         btn.textContent = '新增缺失記錄';
-        setTimeout(function() { window.scrollTo(0,0); }, 100);
-      }, 400);
+        toast('❌ 儲存發生錯誤');
+      }
     });
 
     document.getElementById('d-fs').addEventListener('change', renderDList);
