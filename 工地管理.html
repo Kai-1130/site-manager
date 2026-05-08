@@ -1032,6 +1032,25 @@
       transform: scale(0.92) !important;
       filter: brightness(0.8) !important;
     }
+    #loading-mask {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10000;
+      transition: opacity 0.5s;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #185FA5;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
   </style>
 </head>
 
@@ -1444,7 +1463,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.0.4 (資料保護版) 
+      v2.0.5 (極速穩定版) 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 重新載入 ]</span>
     </div>
   </div>
@@ -1494,15 +1513,20 @@
       dTypes = JSON.parse(localStorage.getItem('dTypes') || '["二丁掛","地磚","泥作","結構","水電","裝修","安全","其他"]');
       sTypes = JSON.parse(localStorage.getItem('sTypes') || '["墜落防護","感電防護","火災防護","倒塌防護","物體飛落防護","機具安全","交通維持","個人防護具(PPE)","環境衛生","其他"]');
       mTypes = JSON.parse(localStorage.getItem('mTypes') || '["鋼筋","預拌混凝土","模板","二丁掛","地磚","防水材","水電管線","鋼構件","油漆","其他"]');
+      // 資料初步載入後隱藏遮罩
+      hideLoading();
+    }
+
+    function hideLoading() {
+      var m = document.getElementById('loading-mask');
+      if (m) { m.style.opacity = '0'; setTimeout(function(){ m.style.display = 'none'; }, 500); }
     }
 
     function checkIDBRecovery() {
-      // 先試圖讀取 LocalStorage
       loadLocalData();
       var hasLocal = (defects.length > 0 || safetyLogs.length > 0 || matLogs.length > 0 || progLogs.length > 0);
       if (hasLocal) { syncIDB(); return; }
       
-      // 如果 LocalStorage 是空的，嘗試從 IDB 救援
       try {
         var tx = db.transaction("backup", "readonly");
         var req = tx.objectStore("backup").get("main_data");
@@ -1518,11 +1542,13 @@
             localStorage.setItem('dTypes', JSON.stringify(dTypes));
             localStorage.setItem('sTypes', JSON.stringify(sTypes));
             localStorage.setItem('mTypes', JSON.stringify(mTypes));
-            // 由於是非同步，救援成功後刷新畫面以套用資料
-            location.reload(); 
+            // 救援完成後立刻刷新畫面上的清單
+            renderDList(); renderSList(); renderMList();
           }
+          hideLoading();
         };
-      } catch (e) { }
+        req.onerror = hideLoading;
+      } catch (e) { hideLoading(); }
     }
 
     function syncIDB() {
@@ -1790,6 +1816,39 @@
     document.getElementById('d-chip-add').addEventListener('click', function () {
       var v = document.getElementById('d-chip-inp').value.trim(); if (!v) return;
       if (!dTypes.includes(v)) { dTypes.push(v); saveDT(); }
+      dType = v; document.getElementById('d-chip-inp').value = ''; renderDChips(); rebuildDFT();
+    });
+
+    document.getElementById('d-submit').addEventListener('click', function () {
+      var btn = this;
+      var loc = document.getElementById('d-loc').value.trim(); if (!loc) { toast('⚠️ 請填寫缺失位置'); return; }
+      
+      btn.disabled = true;
+      btn.textContent = '儲存中...';
+      
+      try {
+        defects.unshift({ id: Date.now(), location: loc, type: dType, priority: dPri, desc: document.getElementById('d-desc').value.trim(), photos: dPh.slice(), fixPhotos: [], status: 'pending', createdAt: todayStr() });
+        dPh.length = 0; 
+        var p = document.getElementById('d-preview'); if(p) p.innerHTML = '';
+        document.getElementById('d-loc').value = ''; document.getElementById('d-desc').value = ''; document.getElementById('d-file').value = '';
+        dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); 
+        
+        toast('✅ 記錄已成功新增');
+        switchDTab('list');
+        btn.disabled = false;
+        btn.textContent = '新增缺失記錄';
+        
+        setTimeout(function() {
+          saveD();
+          window.scrollTo(0,0);
+        }, 100);
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = '新增缺失記錄';
+        toast('❌ 儲存發生錯誤');
+      }
+    });
+.includes(v)) { dTypes.push(v); saveDT(); }
       dType = v; document.getElementById('d-chip-inp').value = ''; renderDChips(); rebuildDFT();
     });
     function rebuildDFT() {
