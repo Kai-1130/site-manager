@@ -1862,61 +1862,9 @@
         toast('❌ 儲存發生錯誤');
       }
     });
-.includes(v)) { dTypes.push(v); saveDT(); }
-      dType = v; document.getElementById('d-chip-inp').value = ''; renderDChips(); rebuildDFT();
-    });
-    function rebuildDFT() {
-      var s = document.getElementById('d-ft'), c = s.value;
-      s.innerHTML = '<option value="">全部類型</option>' + dTypes.map(function (t) { return '<option value="' + t + '"' + (c === t ? ' selected' : '') + '>' + t + '</option>'; }).join('');
-    }
-
-    function syncDPri() {
-      document.querySelectorAll('#d-pri .pri-tag').forEach(function (el) {
-        var p = el.getAttribute('data-p'); el.className = 'pri-tag' + (dPri === p ? ' sel-' + p : '');
-      });
-    }
-    document.querySelectorAll('#d-pri .pri-tag').forEach(function (el) {
-      el.addEventListener('click', function () { dPri = this.getAttribute('data-p'); syncDPri(); });
     });
 
-    document.getElementById('d-ph-btn').addEventListener('click', function () { document.getElementById('d-file').click(); });
-    document.getElementById('d-file').addEventListener('change', function () {
-      var txt = (document.getElementById('d-loc').value.trim() + '\n' + document.getElementById('d-desc').value.trim()).trim();
-      addFiles(this.files, dPh, 'd-preview', txt);
-      this.value = '';
-    });
-
-    document.getElementById('d-submit').addEventListener('click', function () {
-      var btn = this;
-      var loc = document.getElementById('d-loc').value.trim(); if (!loc) { toast('⚠️ 請填寫缺失位置'); return; }
-      
-      btn.disabled = true;
-      btn.textContent = '處理中...';
-      toast('💾 正在儲存...');
-
-      try {
-        defects.unshift({ id: Date.now(), location: loc, type: dType, priority: dPri, desc: document.getElementById('d-desc').value.trim(), photos: dPh.slice(), fixPhotos: [], status: 'pending', createdAt: todayStr() });
-        saveD(); 
-        
-        // 分階段清理與跳轉
-        setTimeout(function() {
-          dPh.length = 0; 
-          var p = document.getElementById('d-preview'); if(p) p.innerHTML = '';
-          document.getElementById('d-loc').value = ''; document.getElementById('d-desc').value = ''; document.getElementById('d-file').value = '';
-          dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); 
-          
-          toast('✅ 缺失記錄已新增');
-          switchDTab('list');
-          btn.disabled = false;
-          btn.textContent = '新增缺失記錄';
-          setTimeout(function() { window.scrollTo(0,0); }, 100);
-        }, 300);
-      } catch (e) {
-        btn.disabled = false;
-        btn.textContent = '新增缺失記錄';
-        toast('❌ 儲存發生錯誤');
-      }
-    });
+    document.getElementById('d-fs').addEventListener('change', renderDList);
 
     document.getElementById('d-fs').addEventListener('change', renderDList);
     document.getElementById('d-fp').addEventListener('change', renderDList);
