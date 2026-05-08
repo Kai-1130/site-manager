@@ -1470,6 +1470,13 @@
     var PB = { urgent: '#FDECEA', high: '#FEF3E2', normal: '#EAF5EA', low: '#F5F5F5' };
     var PO = { urgent: 0, high: 1, normal: 2, low: 3 };
 
+    function mResLabel(r) {
+      if (r === 'accept') return '✅ 合格';
+      if (r === 'partial') return '⚠️ 部分合格';
+      if (r === 'reject') return '❌ 退料';
+      return '';
+    }
+
     function getPri(d) { var p = d && d.priority; return (p && PL[p]) ? p : 'normal'; }
     function todayStr() { var d = new Date(); return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + ('0' + d.getDate()).slice(-2); }
     function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
@@ -1795,14 +1802,27 @@
           var descTa = document.createElement('textarea'); descTa.value = d.desc || ''; descTa.placeholder = '備註';
           ep.appendChild(descLbl); ep.appendChild(descTa);
 
-          // 新增現況照片
-          var apLbl = document.createElement('label'); apLbl.className = 'ep-add-ph'; apLbl.textContent = '＋ 新增現況照片';
+          // 儲存按鈕
+          var saveBtn = document.createElement('button'); saveBtn.className = 'ep-save'; saveBtn.style.background = '#185FA5'; saveBtn.textContent = '儲存內容與照片';
+          (function (id, li, ts, ta) {
+            saveBtn.addEventListener('click', function () {
+              var nloc = li.value.trim(); if (!nloc) { toast('⚠️ 位置不可空白'); return; }
+              defects = defects.map(function (x) { return x.id === id ? Object.assign({}, x, { location: nloc, type: ts.value, priority: epPri, desc: ta.value.trim() }) : x; });
+              saveD(); dEditing = null; toast('✅ 已儲存'); renderDList();
+            });
+          })(d.id, locInp, typSel, descTa);
+          ep.appendChild(saveBtn);
+
+          // 新增現況照片 (放在存檔按鈕下方)
+          var apLbl = document.createElement('label'); apLbl.className = 'ep-add-ph'; apLbl.textContent = '📸 繼續新增照片';
           var apInp = document.createElement('input'); apInp.type = 'file'; apInp.accept = 'image/*'; apInp.multiple = true;
-          (function (id) {
+          (function (id, li, ts, ta) {
             apInp.addEventListener('change', function () {
-              var txt = (locInp.value.trim() + '\n' + descTa.value.trim()).trim();
-              var files = Array.from(this.files);
-              var count = 0;
+              var txt = (li.value.trim() + '\n' + ta.value.trim()).trim();
+              // 先把文字狀態存入 array，避免刷新的時候文字不見
+              defects = defects.map(function (x) { return x.id === id ? Object.assign({}, x, { location: li.value.trim(), type: ts.value, priority: epPri, desc: ta.value.trim() }) : x; });
+              
+              var files = Array.from(this.files); var count = 0;
               files.forEach(function (f) {
                 var r = new FileReader(); r.onload = function (e) {
                   stamp(e.target.result, txt, function (s) {
@@ -1813,20 +1833,8 @@
               });
               this.value = '';
             });
-          })(d.id);
-          apLbl.appendChild(apInp);
-          ep.appendChild(apLbl);
-
-          // 儲存按鈕
-          var saveBtn = document.createElement('button'); saveBtn.className = 'ep-save'; saveBtn.style.background = '#185FA5'; saveBtn.textContent = '儲存';
-          (function (id, li, ts, ta) {
-            saveBtn.addEventListener('click', function () {
-              var nloc = li.value.trim(); if (!nloc) { toast('⚠️ 位置不可空白'); return; }
-              defects = defects.map(function (x) { return x.id === id ? Object.assign({}, x, { location: nloc, type: ts.value, priority: epPri, desc: ta.value.trim() }) : x; });
-              saveD(); dEditing = null; toast('✅ 已儲存'); renderDList();
-            });
           })(d.id, locInp, typSel, descTa);
-          ep.appendChild(saveBtn);
+          apLbl.appendChild(apInp); ep.appendChild(apLbl);
           card.appendChild(ep);
         }
 
@@ -2027,7 +2035,8 @@
       saveS(); sPh.length = 0; document.getElementById('s-preview').innerHTML = '';
       document.getElementById('s-loc').value = ''; document.getElementById('s-desc').value = ''; document.getElementById('s-file').value = '';
       sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes(); toast('✅ 巡檢記錄已儲存');
-      setTimeout(function () { switchSTab('list'); }, 150);
+      renderSList();
+      setTimeout(function () { switchSTab('list'); }, 500);
     });
 
     document.getElementById('s-fr').addEventListener('change', renderSList);
@@ -2244,7 +2253,8 @@
       saveM(); mPh.length = 0; document.getElementById('m-preview').innerHTML = '';
       document.getElementById('m-name').value = ''; document.getElementById('m-qty').value = ''; document.getElementById('m-vendor').value = ''; document.getElementById('m-desc').value = ''; document.getElementById('m-file').value = '';
       mType = mTypes[0] || ''; mRes = 'accept'; renderMChips(); syncMRes(); toast('✅ 驗收記錄已儲存');
-      setTimeout(function () { switchMTab('list'); }, 150);
+      renderMList();
+      setTimeout(function () { switchMTab('list'); }, 500);
     });
 
     document.getElementById('m-fr').addEventListener('change', renderMList);
