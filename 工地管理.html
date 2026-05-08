@@ -1427,7 +1427,10 @@
           </svg>匯出進度報告（Word）</button>
       </div>
     </div>
-    <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">v1.6.0</div>
+    <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
+      v1.6.1 
+      <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 強制更新 ]</span>
+    </div>
   </div>
 
 
@@ -2720,6 +2723,27 @@
     });
     document.getElementById('proj-mgr').addEventListener('input', function () {
       localStorage.setItem('projMgr', this.value);
+    });
+
+    // 強制更新按鈕邏輯
+    document.getElementById('force-refresh').addEventListener('click', function () {
+      if (!navigator.serviceWorker) { location.reload(true); return; }
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        var count = 0;
+        if (regs.length === 0) { location.reload(true); return; }
+        regs.forEach(function (reg) {
+          reg.unregister().then(function () {
+            count++;
+            if (count === regs.length) {
+              caches.keys().then(function (names) {
+                return Promise.all(names.map(function (n) { return caches.delete(n); }));
+              }).then(function () {
+                location.reload(true);
+              });
+            }
+          });
+        });
+      });
     });
 
     rebuildDFT(); rebuildSFT(); rebuildMFT(); updateDExp(); syncMRes(); syncSRes();
