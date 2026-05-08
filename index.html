@@ -1496,17 +1496,22 @@
     var dTypes = [], sTypes = [], mTypes = [];
     
     function initIDB() {
-      if (!window.indexedDB) return loadLocalData();
-      var req = window.indexedDB.open("SiteManagerDB", 1);
-      req.onupgradeneeded = function (e) {
-        var d = e.target.result;
-        if (!d.objectStoreNames.contains("backup")) d.createObjectStore("backup", { keyPath: "id" });
-      };
-      req.onsuccess = function (e) {
-        db = e.target.result;
-        checkIDBRecovery();
-      };
-      req.onerror = function() { loadLocalData(); }
+      // 安全退場保險：3秒後強制移除遮罩
+      setTimeout(hideLoading, 3000);
+
+      if (!window.indexedDB) { loadLocalData(); hideLoading(); return; }
+      try {
+        var req = window.indexedDB.open("SiteManagerDB", 1);
+        req.onupgradeneeded = function (e) {
+          var d = e.target.result;
+          if (!d.objectStoreNames.contains("backup")) d.createObjectStore("backup", { keyPath: "id" });
+        };
+        req.onsuccess = function (e) {
+          db = e.target.result;
+          checkIDBRecovery();
+        };
+        req.onerror = function() { loadLocalData(); hideLoading(); };
+      } catch (e) { loadLocalData(); hideLoading(); }
     }
 
     function loadLocalData() {
@@ -1523,10 +1528,10 @@
 
     function hideLoading() {
       var m = document.getElementById('loading-mask');
-      if (m) { 
+      if (m && m.style.display !== 'none') { 
         m.style.opacity = '0'; 
         setTimeout(function(){ 
-          if(m.parentNode) m.parentNode.removeChild(m); 
+          if(m && m.parentNode) m.parentNode.removeChild(m); 
         }, 600); 
       }
     }
