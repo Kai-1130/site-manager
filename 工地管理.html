@@ -1428,7 +1428,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v1.6.3 
+      v1.6.4 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 強制更新 ]</span>
     </div>
   </div>
@@ -1452,7 +1452,14 @@
   <script>
     // ══ 工具 ══
     function blurAll() { if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); }
-    function scrollToTop() { setTimeout(function() { window.scrollTo(0, 0); }, 50); }
+    function scrollToTop() { 
+      blurAll();
+      setTimeout(function() { 
+        window.scrollTo(0, 0);
+        // iOS 雙重保險：確保在鍵盤縮回後再次校準位置
+        requestAnimationFrame(function() { window.scrollTo(0, 0); });
+      }, 150); 
+    }
 
     var defects = JSON.parse(localStorage.getItem('defects') || '[]');
     var safetyLogs = JSON.parse(localStorage.getItem('safetyLogs') || '[]');
@@ -1653,7 +1660,7 @@
     // 缺失管理
     // ══════════════════════════════
     function switchDTab(t, skipScroll) {
-      if (!skipScroll) { blurAll(); scrollToTop(); }
+      if (!skipScroll) scrollToTop();
       ['list', 'add', 'exp'].forEach(function (n) {
         document.getElementById('dt-' + n + '-btn').className = 'tab' + (t === n ? ' td' : '');
         document.getElementById('dt-' + n).style.display = t === n ? 'block' : 'none';
@@ -1834,8 +1841,15 @@
                     defects = defects.map(function (x) { if (x.id !== id) return x; var c = Object.assign({}, x); c.photos = (c.photos || []).concat([s]); return c; });
                     count++; if (count === files.length) { 
                       saveD(); toast('✅ 照片已新增'); 
-                      // iOS 強化：直接更新 DOM 而不重繪整個列表
-                      setTimeout(renderDList, 50); 
+                      // v1.6.4 錄影診斷優化：完全不重繪列表，直接更新 DOM
+                      var phArea = ep.querySelector('.ph-row');
+                      if (phArea) {
+                         var newImg = document.createElement('img'); newImg.src = s; newImg.className = 'ph-img';
+                         newImg.addEventListener('click', function() { openLbD(id, (defects.find(function(x){return x.id===id})||{}).photos.length - 1); });
+                         phArea.appendChild(newImg);
+                      } else {
+                         setTimeout(renderDList, 50); // 若找不到區域才重繪
+                      }
                     }
                   });
                 }; r.readAsDataURL(f);
