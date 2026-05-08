@@ -1444,7 +1444,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.0.2 (終極穩定版) 
+      v2.0.3 (同步導航版) 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 重新載入 ]</span>
     </div>
   </div>
@@ -1666,6 +1666,13 @@
         cb(c.toDataURL('image/jpeg', 0.88));
       }; img.src = src;
     }
+
+    // 將 stamp 封裝為 Promise 以利同步控制
+    function stampAsync(src, text) {
+      return new Promise(function(resolve) {
+        stamp(src, text, resolve);
+      });
+    }
     function renderPreview(arr, previewId) {
       var p = document.getElementById(previewId);
       if (!p) return;
@@ -1686,17 +1693,20 @@
         p.appendChild(w);
       });
     }
-    function addFiles(files, arr, previewId, text) {
-      var pending = files.length;
-      if (pending === 0) return;
-      Array.from(files).forEach(function (f) {
-        var r = new FileReader(); r.onload = function (e) {
-          stamp(e.target.result, text, function (s) {
-            arr.push(s);
-            pending--;
-            if (pending === 0 && previewId) renderPreview(arr, previewId);
-          });
-        }; r.readAsDataURL(f);
+    function addFiles(files, targetArr, previewId, watermarkText) {
+      if (!files.length) return;
+      toast('📸 照片處理中...');
+      var promises = Array.from(files).map(function(f) {
+        return new Promise(function(resolve) {
+          var r = new FileReader();
+          r.onload = function(e) { resolve(stampAsync(e.target.result, watermarkText)); };
+          r.readAsDataURL(f);
+        });
+      });
+      Promise.all(promises).then(function(results) {
+        results.forEach(function(s) { targetArr.push(s); });
+        if (previewId) renderPreview(targetArr, previewId);
+        toast('✅ 照片處理完成');
       });
     }
     function dlBlob(blob, name) { var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500); }
@@ -1804,14 +1814,28 @@
     });
 
     document.getElementById('d-submit').addEventListener('click', function () {
+      var btn = this;
       var loc = document.getElementById('d-loc').value.trim(); if (!loc) { toast('⚠️ 請填寫缺失位置'); return; }
+      
+      btn.disabled = true;
+      btn.textContent = '處理中...';
+      toast('💾 正在儲存...');
+
       defects.unshift({ id: Date.now(), location: loc, type: dType, priority: dPri, desc: document.getElementById('d-desc').value.trim(), photos: dPh.slice(), fixPhotos: [], status: 'pending', createdAt: todayStr() });
-      saveD(); dPh.length = 0; document.getElementById('d-preview').innerHTML = '';
-      document.getElementById('d-loc').value = ''; document.getElementById('d-desc').value = ''; document.getElementById('d-file').value = '';
-      dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); toast('✅ 缺失記錄已新增');
-      switchDTab('list');
-      // 確保送出後畫面回到頂部 (修正 iOS 失焦導航)
-      setTimeout(function() { window.scrollTo(0,0); }, 50);
+      
+      // 給予 iOS 一點緩衝時間確保資料寫入與 UI 反應
+      setTimeout(function() {
+        saveD(); 
+        dPh.length = 0; document.getElementById('d-preview').innerHTML = '';
+        document.getElementById('d-loc').value = ''; document.getElementById('d-desc').value = ''; document.getElementById('d-file').value = '';
+        dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); 
+        
+        toast('✅ 缺失記錄已新增');
+        switchDTab('list');
+        btn.disabled = false;
+        btn.textContent = '新增缺失記錄';
+        setTimeout(function() { window.scrollTo(0,0); }, 100);
+      }, 400);
     });
 
     document.getElementById('d-fs').addEventListener('change', renderDList);
@@ -2144,14 +2168,27 @@
     });
 
     document.getElementById('s-submit').addEventListener('click', function () {
+      var btn = this;
       var loc = document.getElementById('s-loc').value.trim(); if (!loc) { toast('⚠️ 請填寫巡檢地點'); return; }
+      
+      btn.disabled = true;
+      btn.textContent = '處理中...';
+      toast('💾 正在儲存...');
+
       safetyLogs.unshift({ id: Date.now(), location: loc, type: sType, desc: document.getElementById('s-desc').value.trim(), photos: sPh.slice(), result: sRes, createdAt: todayStr() });
-      saveS(); sPh.length = 0; document.getElementById('s-preview').innerHTML = '';
-      document.getElementById('s-loc').value = ''; document.getElementById('s-desc').value = ''; document.getElementById('s-file').value = '';
-      sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes(); toast('✅ 巡檢記錄已儲存');
-      switchSTab('list');
-      // 確保送出後畫面回到頂部
-      setTimeout(function() { window.scrollTo(0,0); }, 50);
+      
+      setTimeout(function() {
+        saveS(); 
+        sPh.length = 0; document.getElementById('s-preview').innerHTML = '';
+        document.getElementById('s-loc').value = ''; document.getElementById('s-desc').value = ''; document.getElementById('s-file').value = '';
+        sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes(); 
+        
+        toast('✅ 巡檢記錄已儲存');
+        switchSTab('list');
+        btn.disabled = false;
+        btn.textContent = '新增巡檢記錄';
+        setTimeout(function() { window.scrollTo(0,0); }, 100);
+      }, 400);
     });
 
     document.getElementById('s-fr').addEventListener('change', renderSList);
@@ -2368,14 +2405,27 @@
     function mResBadge(r) { return r === 'accept' ? 'bpass' : r === 'partial' ? 'bpart' : 'bfail'; }
 
     document.getElementById('m-submit').addEventListener('click', function () {
+      var btn = this;
       var name = document.getElementById('m-name').value.trim(); if (!name) { toast('⚠️ 請填寫材料名稱'); return; }
+      
+      btn.disabled = true;
+      btn.textContent = '處理中...';
+      toast('💾 正在儲存...');
+
       matLogs.unshift({ id: Date.now(), name: name, type: mType, qty: document.getElementById('m-qty').value.trim(), vendor: document.getElementById('m-vendor').value.trim(), desc: document.getElementById('m-desc').value.trim(), photos: mPh.slice(), result: mRes, createdAt: todayStr() });
-      saveM(); mPh.length = 0; document.getElementById('m-preview').innerHTML = '';
-      document.getElementById('m-name').value = ''; document.getElementById('m-qty').value = ''; document.getElementById('m-vendor').value = ''; document.getElementById('m-desc').value = ''; document.getElementById('m-file').value = '';
-      mType = mTypes[0] || ''; mRes = 'accept'; renderMChips(); syncMRes(); toast('✅ 驗收記錄已儲存');
-      switchMTab('list');
-      // 確保送出後畫面回到頂部
-      setTimeout(function() { window.scrollTo(0,0); }, 50);
+      
+      setTimeout(function() {
+        saveM(); 
+        mPh.length = 0; document.getElementById('m-preview').innerHTML = '';
+        document.getElementById('m-name').value = ''; document.getElementById('m-qty').value = ''; document.getElementById('m-vendor').value = ''; document.getElementById('m-desc').value = ''; document.getElementById('m-file').value = '';
+        mType = mTypes[0] || ''; mRes = 'accept'; renderMChips(); syncMRes(); 
+        
+        toast('✅ 驗收記錄已儲存');
+        switchMTab('list');
+        btn.disabled = false;
+        btn.textContent = '新增驗收記錄';
+        setTimeout(function() { window.scrollTo(0,0); }, 100);
+      }, 400);
     });
 
     document.getElementById('m-fr').addEventListener('change', renderMList);
