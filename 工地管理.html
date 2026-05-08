@@ -1428,7 +1428,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v1.6.2 
+      v1.6.3 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 強制更新 ]</span>
     </div>
   </div>
@@ -1450,7 +1450,10 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // ══ 資料 ══
+    // ══ 工具 ══
+    function blurAll() { if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); }
+    function scrollToTop() { setTimeout(function() { window.scrollTo(0, 0); }, 50); }
+
     var defects = JSON.parse(localStorage.getItem('defects') || '[]');
     var safetyLogs = JSON.parse(localStorage.getItem('safetyLogs') || '[]');
     var matLogs = JSON.parse(localStorage.getItem('matLogs') || '[]');
@@ -1617,7 +1620,7 @@
 
     // ── 模組切換 ──
     function switchMod(mod) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      blurAll(); scrollToTop();
       ['defect', 'safety', 'material', 'progress'].forEach(function (m) {
         document.getElementById('module-' + m).style.display = m === mod ? 'block' : 'none';
         document.getElementById('mod-' + m).className = 'module-btn' + (m === mod ? ' mod-' + m[0] : '');
@@ -1650,7 +1653,7 @@
     // 缺失管理
     // ══════════════════════════════
     function switchDTab(t, skipScroll) {
-      if (!skipScroll) window.scrollTo(0, 0);
+      if (!skipScroll) { blurAll(); scrollToTop(); }
       ['list', 'add', 'exp'].forEach(function (n) {
         document.getElementById('dt-' + n + '-btn').className = 'tab' + (t === n ? ' td' : '');
         document.getElementById('dt-' + n).style.display = t === n ? 'block' : 'none';
@@ -1713,7 +1716,7 @@
       saveD(); dPh.length = 0; document.getElementById('d-preview').innerHTML = '';
       document.getElementById('d-loc').value = ''; document.getElementById('d-desc').value = ''; document.getElementById('d-file').value = '';
       dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); toast('✅ 缺失記錄已新增');
-      switchDTab('list'); window.scrollTo(0, 0);
+      switchDTab('list');
     });
 
     document.getElementById('d-fs').addEventListener('change', renderDList);
@@ -1811,7 +1814,7 @@
             saveBtn.addEventListener('click', function () {
               var nloc = li.value.trim(); if (!nloc) { toast('⚠️ 位置不可空白'); return; }
               defects = defects.map(function (x) { return x.id === id ? Object.assign({}, x, { location: nloc, type: ts.value, priority: epPri, desc: ta.value.trim() }) : x; });
-              saveD(); dEditing = null; toast('✅ 已儲存'); renderDList(); window.scrollTo(0, 0);
+              saveD(); dEditing = null; toast('✅ 已儲存'); renderDList(); blurAll(); scrollToTop();
             });
           })(d.id, locInp, typSel, descTa);
           ep.appendChild(saveBtn);
@@ -1823,14 +1826,17 @@
             apInp.addEventListener('change', function () {
               var txt = (li.value.trim() + '\n' + ta.value.trim()).trim();
               defects = defects.map(function (x) { return x.id === id ? Object.assign({}, x, { location: li.value.trim(), type: ts.value, priority: epPri, desc: ta.value.trim() }) : x; });
-              
               var files = Array.from(this.files); var count = 0;
               if (files.length > 0) toast('📸 照片處理中...');
               files.forEach(function (f) {
                 var r = new FileReader(); r.onload = function (e) {
                   stamp(e.target.result, txt, function (s) {
                     defects = defects.map(function (x) { if (x.id !== id) return x; var c = Object.assign({}, x); c.photos = (c.photos || []).concat([s]); return c; });
-                    count++; if (count === files.length) { saveD(); toast('✅ 照片已新增'); setTimeout(renderDList, 50); }
+                    count++; if (count === files.length) { 
+                      saveD(); toast('✅ 照片已新增'); 
+                      // iOS 強化：直接更新 DOM 而不重繪整個列表
+                      setTimeout(renderDList, 50); 
+                    }
                   });
                 }; r.readAsDataURL(f);
               });
@@ -1987,7 +1993,7 @@
     // 工安巡檢
     // ══════════════════════════════
     function switchSTab(t, skipScroll) {
-      if (!skipScroll) window.scrollTo(0, 0);
+      if (!skipScroll) { blurAll(); scrollToTop(); }
       ['list', 'add', 'exp'].forEach(function (n) {
         var btn = document.getElementById('st-' + n + '-btn');
         if (btn) btn.className = 'tab' + (t === n ? ' ts' : '');
@@ -2038,7 +2044,7 @@
       saveS(); sPh.length = 0; document.getElementById('s-preview').innerHTML = '';
       document.getElementById('s-loc').value = ''; document.getElementById('s-desc').value = ''; document.getElementById('s-file').value = '';
       sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes(); toast('✅ 巡檢記錄已儲存');
-      switchSTab('list'); window.scrollTo(0, 0);
+      switchSTab('list');
     });
 
     document.getElementById('s-fr').addEventListener('change', renderSList);
@@ -2122,7 +2128,7 @@
             saveBtn.addEventListener('click', function () {
               var nloc = li.value.trim(); if (!nloc) { toast('⚠️ 地點不可空白'); return; }
               safetyLogs = safetyLogs.map(function (x) { return x.id === id ? Object.assign({}, x, { location: nloc, type: ts.value, result: rs.value, desc: ta.value.trim() }) : x; });
-              saveS(); sEditing = null; toast('✅ 已儲存'); renderSList(); window.scrollTo(0, 0);
+              saveS(); sEditing = null; toast('✅ 已儲存'); renderSList(); blurAll(); scrollToTop();
             });
           })(d.id, locInp, typSel, resSel, descTa);
           ep.appendChild(saveBtn); card.appendChild(ep);
@@ -2198,7 +2204,7 @@
     // 材料驗收
     // ══════════════════════════════
     function switchMTab(t, skipScroll) {
-      if (!skipScroll) window.scrollTo(0, 0);
+      if (!skipScroll) { blurAll(); scrollToTop(); }
       ['add', 'list', 'exp'].forEach(function (n) {
         var btn = document.getElementById('mt-' + n + '-btn');
         if (btn) btn.className = 'tab' + (t === n ? ' tm' : '');
@@ -2257,7 +2263,7 @@
       saveM(); mPh.length = 0; document.getElementById('m-preview').innerHTML = '';
       document.getElementById('m-name').value = ''; document.getElementById('m-qty').value = ''; document.getElementById('m-vendor').value = ''; document.getElementById('m-desc').value = ''; document.getElementById('m-file').value = '';
       mType = mTypes[0] || ''; mRes = 'accept'; renderMChips(); syncMRes(); toast('✅ 驗收記錄已儲存');
-      switchMTab('list'); window.scrollTo(0, 0);
+      switchMTab('list');
     });
 
     document.getElementById('m-fr').addEventListener('change', renderMList);
@@ -2352,7 +2358,7 @@
             saveBtn.addEventListener('click', function () {
               var nn = ni.value.trim(); if (!nn) { toast('⚠️ 名稱不可空白'); return; }
               matLogs = matLogs.map(function (x) { return x.id === id ? Object.assign({}, x, { name: nn, type: ts.value, qty: qi.value.trim(), vendor: vi.value.trim(), result: rs.value, desc: ta.value.trim() }) : x; });
-              saveM(); mEditing = null; toast('✅ 已儲存'); renderMList(); window.scrollTo(0, 0);
+              saveM(); mEditing = null; toast('✅ 已儲存'); renderMList(); blurAll(); scrollToTop();
             });
           })(d.id, nameInp, typSel, qtyInp, venInp, resSel, descTa);
           ep.appendChild(saveBtn); card.appendChild(ep);
@@ -2418,7 +2424,7 @@
     // 工程進度
     // ══════════════════════════════
     function switchPTab(t, skipScroll) {
-      if (!skipScroll) window.scrollTo(0, 0);
+      if (!skipScroll) { blurAll(); scrollToTop(); }
       ['list', 'add'].forEach(function (n) { document.getElementById('pt-' + n + '-btn').className = 'tab' + (t === n ? ' tp' : ''); document.getElementById('pt-' + n).style.display = t === n ? 'block' : 'none'; });
       if (t === 'list') renderPList();
     }
