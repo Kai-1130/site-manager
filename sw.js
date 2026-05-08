@@ -1,4 +1,4 @@
-const CACHE_NAME = 'site-manager-cache-v1.7.1';
+const CACHE_NAME = 'site-manager-cache-v2.0.0';
 const urlsToCache = [
   './',
   './工地管理.html',
@@ -9,10 +9,7 @@ const urlsToCache = [
 self.addEventListener('install', event => {
   self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => {
-        return cache.addAll(urlsToCache);
-      })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
   );
 });
 
@@ -30,22 +27,29 @@ self.addEventListener('activate', event => {
   );
 });
 
+// Stale-While-Revalidate Strategy (靜默更新核心)
 self.addEventListener('fetch', event => {
-  // Only cache same-origin navigation and static asset requests
   if (event.request.method !== 'GET') return;
+  
   event.respondWith(
-    fetch(event.request).then(response => {
-      // Only cache our own static resources
-      var url = new URL(event.request.url);
-      if (url.origin === location.origin) {
-        return caches.open(CACHE_NAME).then(cache => {
-          cache.put(event.request, response.clone());
-          return response;
-        });
-      }
-      return response;
-    }).catch(() => {
-      return caches.match(event.request);
+    caches.match(event.request).then(cachedResponse => {
+      // 背景非同步抓取新版本更新快取
+      const fetchPromise = fetch(event.request).then(networkResponse => {
+        var url = new URL(event.request.url);
+        // 只快取同源的靜態資源
+        if (url.origin === location.origin && networkResponse.ok) {
+          caches.open(CACHE_NAME).then(cache => {
+            cache.put(event.request, networkResponse.clone());
+          });
+        }
+        return networkResponse;
+      }).catch(() => {
+        // 斷網時靜默失敗，因為已經有 cachedResponse 墊底
+        return null;
+      });
+
+      // 優先回傳快取 (秒開)，如果沒有快取才等網路
+      return cachedResponse || fetchPromise;
     })
   );
 });

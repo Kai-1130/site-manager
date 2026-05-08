@@ -1441,8 +1441,8 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v1.7.1 
-      <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 強制更新 ]</span>
+      v2.0.0 (離線穩定版) 
+      <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 重新載入 ]</span>
     </div>
   </div>
 
@@ -1463,6 +1463,76 @@
   <div class="toast" id="toast"></div>
 
   <script>
+    // ── 雙重保險 (IndexedDB) ──
+    // 移至最上方：確保在畫面渲染和存取 localStorage 前，先嘗試救援資料
+    var db;
+    var defects = [], safetyLogs = [], matLogs = [], progLogs = [];
+    var dTypes = [], sTypes = [], mTypes = [];
+    
+    function initIDB() {
+      if (!window.indexedDB) return loadLocalData();
+      var req = window.indexedDB.open("SiteManagerDB", 1);
+      req.onupgradeneeded = function (e) {
+        var d = e.target.result;
+        if (!d.objectStoreNames.contains("backup")) d.createObjectStore("backup", { keyPath: "id" });
+      };
+      req.onsuccess = function (e) {
+        db = e.target.result;
+        checkIDBRecovery();
+      };
+      req.onerror = function() { loadLocalData(); }
+    }
+
+    function loadLocalData() {
+      defects = JSON.parse(localStorage.getItem('defects') || '[]');
+      safetyLogs = JSON.parse(localStorage.getItem('safetyLogs') || '[]');
+      matLogs = JSON.parse(localStorage.getItem('matLogs') || '[]');
+      progLogs = JSON.parse(localStorage.getItem('progLogs') || '[]');
+      dTypes = JSON.parse(localStorage.getItem('dTypes') || '["二丁掛","地磚","泥作","結構","水電","裝修","安全","其他"]');
+      sTypes = JSON.parse(localStorage.getItem('sTypes') || '["墜落防護","感電防護","火災防護","倒塌防護","物體飛落防護","機具安全","交通維持","個人防護具(PPE)","環境衛生","其他"]');
+      mTypes = JSON.parse(localStorage.getItem('mTypes') || '["鋼筋","預拌混凝土","模板","二丁掛","地磚","防水材","水電管線","鋼構件","油漆","其他"]');
+    }
+
+    function checkIDBRecovery() {
+      // 先試圖讀取 LocalStorage
+      loadLocalData();
+      var hasLocal = (defects.length > 0 || safetyLogs.length > 0 || matLogs.length > 0 || progLogs.length > 0);
+      if (hasLocal) { syncIDB(); return; }
+      
+      // 如果 LocalStorage 是空的，嘗試從 IDB 救援
+      try {
+        var tx = db.transaction("backup", "readonly");
+        var req = tx.objectStore("backup").get("main_data");
+        req.onsuccess = function () {
+          var d = req.result;
+          if (d && (d.defects.length > 0 || d.safetyLogs.length > 0 || d.matLogs.length > 0 || d.progLogs.length > 0)) {
+            defects = d.defects || []; safetyLogs = d.safetyLogs || []; matLogs = d.matLogs || []; progLogs = d.progLogs || [];
+            if (d.dTypes) dTypes = d.dTypes; if (d.sTypes) sTypes = d.sTypes; if (d.mTypes) mTypes = d.mTypes;
+            localStorage.setItem('defects', JSON.stringify(defects));
+            localStorage.setItem('safetyLogs', JSON.stringify(safetyLogs));
+            localStorage.setItem('matLogs', JSON.stringify(matLogs));
+            localStorage.setItem('progLogs', JSON.stringify(progLogs));
+            localStorage.setItem('dTypes', JSON.stringify(dTypes));
+            localStorage.setItem('sTypes', JSON.stringify(sTypes));
+            localStorage.setItem('mTypes', JSON.stringify(mTypes));
+            // 由於是非同步，救援成功後刷新畫面以套用資料
+            location.reload(); 
+          }
+        };
+      } catch (e) { }
+    }
+
+    function syncIDB() {
+      if (!db) return;
+      try {
+        var tx = db.transaction("backup", "readwrite");
+        tx.objectStore("backup").put({ id: "main_data", defects: defects, safetyLogs: safetyLogs, matLogs: matLogs, progLogs: progLogs, dTypes: dTypes, sTypes: sTypes, mTypes: mTypes, ts: Date.now() });
+      } catch (e) { }
+    }
+    
+    // 立即啟動初始化
+    initIDB();
+
     // ══ 工具 ══
     function blurAll() { if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); }
     // iOS Safari/WebKit reflow 強制觸發重繪
@@ -1482,14 +1552,7 @@
       }, 200); 
     }
 
-    var defects = JSON.parse(localStorage.getItem('defects') || '[]');
-    var safetyLogs = JSON.parse(localStorage.getItem('safetyLogs') || '[]');
-    var matLogs = JSON.parse(localStorage.getItem('matLogs') || '[]');
-    var progLogs = JSON.parse(localStorage.getItem('progLogs') || '[]');
     // 所有類型都存在 customTypes，預設類型也一樣，差別只是刪除後回到第一個
-    var dTypes = JSON.parse(localStorage.getItem('dTypes') || JSON.stringify(['二丁掛', '地磚', '泥作', '結構', '水電', '裝修', '安全', '其他']));
-    var sTypes = JSON.parse(localStorage.getItem('sTypes') || JSON.stringify(['安全帽', '安全網', '施工架', '圍欄', '電氣安全', '動火作業', '個人防護']));
-    var mTypes = JSON.parse(localStorage.getItem('mTypes') || JSON.stringify(['鋼筋', '混凝土', '鋼材', '木材', '砂石', '防水材料', '磁磚', '其他']));
 
     var dType = dTypes[0], dPri = 'urgent', dPh = [];
     var sType = sTypes[0], sRes = 'pass', sPh = [];
@@ -1538,52 +1601,6 @@
     }
     document.getElementById('dlg-no').addEventListener('click', function () { document.getElementById('dlg').classList.remove('open'); dlgCb = null; });
     document.getElementById('dlg-yes').addEventListener('click', function () { document.getElementById('dlg').classList.remove('open'); if (dlgCb) { dlgCb(); dlgCb = null; } });
-
-    // ── 雙重保險 (IndexedDB) ──
-    var db;
-    function initIDB() {
-      if (!window.indexedDB) return;
-      var req = window.indexedDB.open("SiteManagerDB", 1);
-      req.onupgradeneeded = function (e) {
-        var d = e.target.result;
-        if (!d.objectStoreNames.contains("backup")) d.createObjectStore("backup", { keyPath: "id" });
-      };
-      req.onsuccess = function (e) {
-        db = e.target.result;
-        checkIDBRecovery();
-      };
-    }
-    function syncIDB() {
-      if (!db) return;
-      try {
-        var tx = db.transaction("backup", "readwrite");
-        tx.objectStore("backup").put({ id: "main_data", defects: defects, safetyLogs: safetyLogs, matLogs: matLogs, progLogs: progLogs, dTypes: dTypes, sTypes: sTypes, mTypes: mTypes, ts: Date.now() });
-      } catch (e) { }
-    }
-    function checkIDBRecovery() {
-      var hasLocal = (defects.length > 0 || safetyLogs.length > 0 || matLogs.length > 0 || progLogs.length > 0);
-      if (hasLocal) { syncIDB(); return; }
-      try {
-        var tx = db.transaction("backup", "readonly");
-        var req = tx.objectStore("backup").get("main_data");
-        req.onsuccess = function () {
-          var d = req.result;
-          if (d && (d.defects.length > 0 || d.safetyLogs.length > 0 || d.matLogs.length > 0 || d.progLogs.length > 0)) {
-            defects = d.defects || []; safetyLogs = d.safetyLogs || []; matLogs = d.matLogs || []; progLogs = d.progLogs || [];
-            if (d.dTypes) dTypes = d.dTypes; if (d.sTypes) sTypes = d.sTypes; if (d.mTypes) mTypes = d.mTypes;
-            localStorage.setItem('defects', JSON.stringify(defects));
-            localStorage.setItem('safetyLogs', JSON.stringify(safetyLogs));
-            localStorage.setItem('matLogs', JSON.stringify(matLogs));
-            localStorage.setItem('progLogs', JSON.stringify(progLogs));
-            localStorage.setItem('dTypes', JSON.stringify(dTypes));
-            localStorage.setItem('sTypes', JSON.stringify(sTypes));
-            localStorage.setItem('mTypes', JSON.stringify(mTypes));
-            dlg('自動救援成功', '系統偵測到快取遺失，已從底層保險箱自動找回您的所有資料！', '太棒了', '#27AE60', function () { location.reload(); });
-          }
-        };
-      } catch (e) { }
-    }
-    initIDB();
 
 
     // ── 燈箱 ──
@@ -1755,6 +1772,8 @@
       document.getElementById('d-loc').value = ''; document.getElementById('d-desc').value = ''; document.getElementById('d-file').value = '';
       dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); toast('✅ 缺失記錄已新增');
       switchDTab('list');
+      // 確保送出後畫面回到頂部 (修正 iOS 失焦導航)
+      setTimeout(function() { window.scrollTo(0,0); }, 50);
     });
 
     document.getElementById('d-fs').addEventListener('change', renderDList);
@@ -2093,6 +2112,8 @@
       document.getElementById('s-loc').value = ''; document.getElementById('s-desc').value = ''; document.getElementById('s-file').value = '';
       sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes(); toast('✅ 巡檢記錄已儲存');
       switchSTab('list');
+      // 確保送出後畫面回到頂部
+      setTimeout(function() { window.scrollTo(0,0); }, 50);
     });
 
     document.getElementById('s-fr').addEventListener('change', renderSList);
@@ -2315,6 +2336,8 @@
       document.getElementById('m-name').value = ''; document.getElementById('m-qty').value = ''; document.getElementById('m-vendor').value = ''; document.getElementById('m-desc').value = ''; document.getElementById('m-file').value = '';
       mType = mTypes[0] || ''; mRes = 'accept'; renderMChips(); syncMRes(); toast('✅ 驗收記錄已儲存');
       switchMTab('list');
+      // 確保送出後畫面回到頂部
+      setTimeout(function() { window.scrollTo(0,0); }, 50);
     });
 
     document.getElementById('m-fr').addEventListener('change', renderMList);
@@ -2792,31 +2815,12 @@
       localStorage.setItem('projMgr', this.value);
     });
 
-    // 強制更新按鈕邏輯（iOS PWA 安全版）
+    // 重新載入按鈕邏輯（離線版不再強制清除 SW）
     document.getElementById('force-refresh').addEventListener('click', function () {
-      toast('⛳ 正在更新中...');
-      if (!navigator.serviceWorker) { 
-        // 無 SW，直接重載但不用 force
-        window.location.href = window.location.href;
-        return; 
-      }
-      navigator.serviceWorker.getRegistrations().then(function (regs) {
-        var unreg = regs.map(function(r) { return r.unregister(); });
-        return Promise.all(unreg);
-      }).then(function() {
-        return caches.keys();
-      }).then(function(names) {
-        return Promise.all(names.map(function(n) { return caches.delete(n); }));
-      }).then(function() {
-        toast('✅ 更新完成！重新載入中...');
-        // iOS PWA 安全重載：不用 location.reload(true)，改用重新設定 href
-        setTimeout(function() {
-          window.location.href = window.location.pathname + '?v=' + Date.now();
-        }, 800);
-      }).catch(function() {
-        // 失敗時仍然重載
-        window.location.href = window.location.href;
-      });
+      toast('⛳ 重新載入中...');
+      setTimeout(function() {
+        window.location.href = window.location.pathname + '?v=' + Date.now();
+      }, 500);
     });
 
     rebuildDFT(); rebuildSFT(); rebuildMFT(); updateDExp(); syncMRes(); syncSRes();
