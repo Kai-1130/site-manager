@@ -1019,15 +1019,19 @@
       display: none;
     }
 
-    /* iOS PWA 點擊延遲修復 + 點擊回饋 */
-    button, .tab, .module-btn, .chip, .pri-tag, label, .ep-save, .ep-add-ph, .submit-btn, .exp-btn {
+    /* iOS PWA 點擊延遲修復 + 全方位點擊回饋 */
+    button, .tab, .module-btn, .chip, .pri-tag, label, .ep-save, .ep-add-ph, .submit-btn, .exp-btn, .abtn, .day-cell, .rcard {
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s, background-color 0.1s, opacity 0.1s;
     }
-    button:active, .tab:active, .module-btn:active, .submit-btn:active, .ep-save:active, .exp-btn:active {
-      opacity: 0.6;
-      transform: scale(0.97);
-      transition: all 0.05s;
+
+    /* 點擊時的實體回饋感 */
+    button:active, .tab:active, .module-btn:active, .submit-btn:active, .ep-save:active, .exp-btn:active, .abtn:active, .chip:active, .day-cell:active {
+      opacity: 0.7 !important;
+      transform: scale(0.94) !important;
+      background-color: rgba(0, 0, 0, 0.1) !important;
+      filter: brightness(0.9);
     }
   </style>
 </head>
@@ -1441,7 +1445,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.0.0 (離線穩定版) 
+      v2.0.1 (強化觸感版) 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 重新載入 ]</span>
     </div>
   </div>
