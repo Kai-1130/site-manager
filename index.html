@@ -1016,6 +1016,12 @@
     input[type="file"] {
       display: none;
     }
+
+    /* iOS PWA 點擊延遲修復 */
+    button, .tab, .module-btn, .chip, .pri-tag, label, .ep-save, .ep-add-ph, .submit-btn, .exp-btn {
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+    }
   </style>
 </head>
 
@@ -1428,7 +1434,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v1.6.4 
+      v1.7.0 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 強制更新 ]</span>
     </div>
   </div>
@@ -1452,13 +1458,21 @@
   <script>
     // ══ 工具 ══
     function blurAll() { if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); }
+    // iOS Safari/WebKit reflow 強制觸發重繪
+    function forceRepaint(el) { if (el) void el.offsetHeight; }
     function scrollToTop() { 
       blurAll();
+      // iOS 需要等待鍵盤縮回 + 版面重繪後才能滿動
       setTimeout(function() { 
         window.scrollTo(0, 0);
-        // iOS 雙重保險：確保在鍵盤縮回後再次校準位置
-        requestAnimationFrame(function() { window.scrollTo(0, 0); });
-      }, 150); 
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+        // 雙重保險：透過 rAF 等待下一幀再執行一次
+        requestAnimationFrame(function() { 
+          window.scrollTo(0, 0); 
+          document.body.scrollTop = 0;
+        });
+      }, 200); 
     }
 
     var defects = JSON.parse(localStorage.getItem('defects') || '[]');
@@ -1627,11 +1641,15 @@
 
     // ── 模組切換 ──
     function switchMod(mod) {
-      blurAll(); scrollToTop();
+      blurAll();
+      var container = document.querySelector('.app');
       ['defect', 'safety', 'material', 'progress'].forEach(function (m) {
         document.getElementById('module-' + m).style.display = m === mod ? 'block' : 'none';
         document.getElementById('mod-' + m).className = 'module-btn' + (m === mod ? ' mod-' + m[0] : '');
       });
+      // iOS WebKit: 強制 reflow
+      forceRepaint(container);
+      scrollToTop();
       if (mod === 'defect') { renderDChips(); switchDTab('list', true); }
       if (mod === 'safety') { renderSChips(); switchSTab('list', true); }
       if (mod === 'material') { renderMChips(); switchMTab('list', true); }
@@ -1660,14 +1678,20 @@
     // 缺失管理
     // ══════════════════════════════
     function switchDTab(t, skipScroll) {
-      if (!skipScroll) scrollToTop();
+      if (!skipScroll) blurAll();
+      var target = null;
       ['list', 'add', 'exp'].forEach(function (n) {
         document.getElementById('dt-' + n + '-btn').className = 'tab' + (t === n ? ' td' : '');
-        document.getElementById('dt-' + n).style.display = t === n ? 'block' : 'none';
+        var sec = document.getElementById('dt-' + n);
+        sec.style.display = t === n ? 'block' : 'none';
+        if (t === n) target = sec;
       });
+      // iOS WebKit: 強制 reflow 觸發重繪
+      forceRepaint(target);
       if (t === 'list') renderDList();
       if (t === 'add') { renderDChips(); syncDPri(); }
       if (t === 'exp') updateDExp();
+      if (!skipScroll) scrollToTop();
     }
     document.getElementById('dt-list-btn').addEventListener('click', function () { switchDTab('list'); });
     document.getElementById('dt-add-btn').addEventListener('click', function () { switchDTab('add'); });
@@ -2007,16 +2031,19 @@
     // 工安巡檢
     // ══════════════════════════════
     function switchSTab(t, skipScroll) {
-      if (!skipScroll) { blurAll(); scrollToTop(); }
+      if (!skipScroll) blurAll();
+      var target = null;
       ['list', 'add', 'exp'].forEach(function (n) {
         var btn = document.getElementById('st-' + n + '-btn');
         if (btn) btn.className = 'tab' + (t === n ? ' ts' : '');
         var sec = document.getElementById('st-' + n);
-        if (sec) sec.style.display = t === n ? 'block' : 'none';
+        if (sec) { sec.style.display = t === n ? 'block' : 'none'; if (t === n) target = sec; }
       });
+      forceRepaint(target);
       if (t === 'add') renderSChips();
       if (t === 'list') renderSList();
       if (t === 'exp') updateSExp();
+      if (!skipScroll) scrollToTop();
     }
     document.getElementById('st-add-btn').addEventListener('click', function () { switchSTab('add'); });
     document.getElementById('st-list-btn').addEventListener('click', function () { switchSTab('list'); });
@@ -2218,16 +2245,19 @@
     // 材料驗收
     // ══════════════════════════════
     function switchMTab(t, skipScroll) {
-      if (!skipScroll) { blurAll(); scrollToTop(); }
+      if (!skipScroll) blurAll();
+      var target = null;
       ['add', 'list', 'exp'].forEach(function (n) {
         var btn = document.getElementById('mt-' + n + '-btn');
         if (btn) btn.className = 'tab' + (t === n ? ' tm' : '');
         var sec = document.getElementById('mt-' + n);
-        if (sec) sec.style.display = t === n ? 'block' : 'none';
+        if (sec) { sec.style.display = t === n ? 'block' : 'none'; if (t === n) target = sec; }
       });
+      forceRepaint(target);
       if (t === 'add') renderMChips();
       if (t === 'list') renderMList();
       if (t === 'exp') updateMExp();
+      if (!skipScroll) scrollToTop();
     }
     document.getElementById('mt-add-btn').addEventListener('click', function () { switchMTab('add'); });
     document.getElementById('mt-list-btn').addEventListener('click', function () { switchMTab('list'); });
@@ -2438,9 +2468,17 @@
     // 工程進度
     // ══════════════════════════════
     function switchPTab(t, skipScroll) {
-      if (!skipScroll) { blurAll(); scrollToTop(); }
-      ['list', 'add'].forEach(function (n) { document.getElementById('pt-' + n + '-btn').className = 'tab' + (t === n ? ' tp' : ''); document.getElementById('pt-' + n).style.display = t === n ? 'block' : 'none'; });
+      if (!skipScroll) blurAll();
+      var target = null;
+      ['list', 'add'].forEach(function (n) { 
+        document.getElementById('pt-' + n + '-btn').className = 'tab' + (t === n ? ' tp' : ''); 
+        var sec = document.getElementById('pt-' + n);
+        sec.style.display = t === n ? 'block' : 'none'; 
+        if (t === n) target = sec;
+      });
+      forceRepaint(target);
       if (t === 'list') renderPList();
+      if (!skipScroll) scrollToTop();
     }
     document.getElementById('pt-add-btn').addEventListener('click', function () { switchPTab('add'); });
     document.getElementById('pt-list-btn').addEventListener('click', function () { switchPTab('list'); });
