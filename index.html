@@ -1019,19 +1019,18 @@
       display: none;
     }
 
-    /* iOS PWA 點擊延遲修復 + 全方位點擊回饋 */
-    button, .tab, .module-btn, .chip, .pri-tag, label, .ep-save, .ep-add-ph, .submit-btn, .exp-btn, .abtn, .day-cell, .rcard {
+    /* iOS PWA 點擊延遲修復 */
+    button, .tab, .module-btn, .chip, .pri-tag, label, .ep-save, .ep-add-ph, .submit-btn, .exp-btn, .abtn, .day-cell {
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
-      transition: transform 0.1s, background-color 0.1s, opacity 0.1s;
+      transition: transform 0.1s, opacity 0.1s;
     }
 
-    /* 點擊時的實體回饋感 */
-    button:active, .tab:active, .module-btn:active, .submit-btn:active, .ep-save:active, .exp-btn:active, .abtn:active, .chip:active, .day-cell:active {
-      opacity: 0.7 !important;
-      transform: scale(0.94) !important;
-      background-color: rgba(0, 0, 0, 0.1) !important;
-      filter: brightness(0.9);
+    /* JavaScript 會動態加入 .active-press 類別 */
+    .active-press {
+      opacity: 0.6 !important;
+      transform: scale(0.92) !important;
+      filter: brightness(0.8) !important;
     }
   </style>
 </head>
@@ -1445,7 +1444,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.0.1 (強化觸感版) 
+      v2.0.2 (終極穩定版) 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 重新載入 ]</span>
     </div>
   </div>
@@ -1534,13 +1533,48 @@
       } catch (e) { }
     }
     
+    // 資料心跳監聽：防止 iOS 意外清空 localStorage
+    setInterval(function() {
+      if (!db) return;
+      var currentLocal = (localStorage.getItem('defects') || '[]').length;
+      if (currentLocal < 10 && defects.length > 0) {
+        // 偵測到 localStorage 可能被清空，重新寫入
+        saveD(); saveS(); saveM(); saveP();
+      }
+    }, 10000);
+    
     // 立即啟動初始化
     initIDB();
 
     // ══ 工具 ══
     function blurAll() { if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); }
+    
+    // JavaScript 觸感回饋核心
+    function bindTactile() {
+      var els = document.querySelectorAll('button, .tab, .module-btn, .chip, .abtn, .day-cell, .ep-save, .submit-btn');
+      els.forEach(function(el) {
+        if (el._tactile) return;
+        el._tactile = true;
+        var start = function() { el.classList.add('active-press'); };
+        var end = function() { el.classList.remove('active-press'); };
+        el.addEventListener('touchstart', start, {passive: true});
+        el.addEventListener('touchend', end, {passive: true});
+        el.addEventListener('touchcancel', end, {passive: true});
+        el.addEventListener('mousedown', start);
+        el.addEventListener('mouseup', end);
+        el.addEventListener('mouseleave', end);
+      });
+    }
+    // 監控 DOM 變化自動綁定回饋
+    new MutationObserver(bindTactile).observe(document.body, {childList: true, subtree: true});
+
     // iOS Safari/WebKit reflow 強制觸發重繪
-    function forceRepaint(el) { if (el) void el.offsetHeight; }
+    function forceRepaint(el) { 
+      if (!el) return;
+      void el.offsetHeight;
+      // 雙重重繪：切換一個不會影響視覺的屬性
+      el.style.zIndex = el.style.zIndex === '1' ? '0' : '1';
+    }
     function scrollToTop() { 
       blurAll();
       // iOS 需要等待鍵盤縮回 + 版面重繪後才能滿動
