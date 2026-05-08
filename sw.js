@@ -1,4 +1,4 @@
-const CACHE_NAME = 'site-manager-cache-v1.5.4';
+const CACHE_NAME = 'site-manager-cache-v1.6.0';
 const urlsToCache = [
   './',
   './工地管理.html',
@@ -31,12 +31,19 @@ self.addEventListener('activate', event => {
 });
 
 self.addEventListener('fetch', event => {
+  // Only cache same-origin navigation and static asset requests
+  if (event.request.method !== 'GET') return;
   event.respondWith(
     fetch(event.request).then(response => {
-      return caches.open(CACHE_NAME).then(cache => {
-        cache.put(event.request, response.clone());
-        return response;
-      });
+      // Only cache our own static resources
+      var url = new URL(event.request.url);
+      if (url.origin === location.origin) {
+        return caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, response.clone());
+          return response;
+        });
+      }
+      return response;
     }).catch(() => {
       return caches.match(event.request);
     })

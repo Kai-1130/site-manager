@@ -1171,10 +1171,11 @@
     <!-- ══ 工安巡檢 ══ -->
     <div id="module-safety" style="display:none;">
       <div class="tab-bar">
-        <div class="tab ts" id="st-hist-btn">巡檢記錄</div>
-        <div class="tab" id="st-form-btn">巡檢表單</div>
+        <div class="tab ts" id="st-list-btn">巡檢記錄</div>
+        <div class="tab" id="st-add-btn">巡檢表單</div>
+        <div class="tab" id="st-exp-btn">匯出報告</div>
       </div>
-      <div class="section" id="st-form">
+      <div class="section" id="st-add">
         <div class="card">
           <div class="field"><label>巡檢地點</label><input type="text" id="s-loc" placeholder="例：2F 施工區"></div>
           <div class="field">
@@ -1205,7 +1206,7 @@
           <button class="submit-btn btn-s" id="s-submit">儲存巡檢記錄</button>
         </div>
       </div>
-      <div class="section" id="st-hist">
+      <div class="section" id="st-list">
         <div class="stats">
           <div class="stat">
             <div class="stat-num" id="s-total">0</div>
@@ -1231,11 +1232,39 @@
           </select>
         </div>
         <div id="safety-list"></div>
-        <button class="exp-btn" id="s-word" style="margin-top:8px;"><svg width="18" height="18" fill="none"
-            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-          </svg>匯出工安巡檢報告（Word）</button>
+      </div>
+      <div class="section" id="st-exp">
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">篩選匯出範圍</div>
+          <div class="exp-filter">
+            <select id="s-er">
+              <option value="">全部結果</option>
+              <option value="pass">✅ 通過</option>
+              <option value="fail">❌ 不合格</option>
+            </select>
+            <select id="s-et">
+              <option value="">全部項目</option>
+            </select>
+          </div>
+          <div id="s-ecount" style="font-size:12px;color:#888;margin-bottom:12px;"></div>
+          <button class="exp-btn" id="s-word"><svg width="18" height="18" fill="none" stroke="currentColor"
+              stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>匯出 Word（含照片，A4）</button>
+          <button class="exp-btn" id="s-html"><svg width="18" height="18" fill="none" stroke="currentColor"
+              stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>匯出 HTML（含照片放大）</button>
+          <button class="exp-btn" id="s-csv"><svg width="18" height="18" fill="none" stroke="currentColor"
+              stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>匯出 Excel（CSV）</button>
+        </div>
       </div>
     </div>
 
@@ -1244,6 +1273,7 @@
       <div class="tab-bar">
         <div class="tab tm" id="mt-list-btn">驗收記錄</div>
         <div class="tab" id="mt-add-btn">新增驗收</div>
+        <div class="tab" id="mt-exp-btn">匯出報告</div>
       </div>
       <div class="section" id="mt-add">
         <div class="card">
@@ -1306,11 +1336,40 @@
           </select>
         </div>
         <div id="material-list"></div>
-        <button class="exp-btn" id="m-word" style="margin-top:8px;"><svg width="18" height="18" fill="none"
-            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
-            <polyline points="14 2 14 8 20 8" />
-          </svg>匯出材料驗收報告（Word）</button>
+      </div>
+      <div class="section" id="mt-exp">
+        <div class="card">
+          <div style="font-size:13px;font-weight:600;margin-bottom:8px;">篩選匯出範圍</div>
+          <div class="exp-filter">
+            <select id="m-er">
+              <option value="">全部結果</option>
+              <option value="accept">✅ 合格</option>
+              <option value="partial">⚠️ 部分合格</option>
+              <option value="reject">❌ 退料</option>
+            </select>
+            <select id="m-et">
+              <option value="">全部類型</option>
+            </select>
+          </div>
+          <div id="m-ecount" style="font-size:12px;color:#888;margin-bottom:12px;"></div>
+          <button class="exp-btn" id="m-word"><svg width="18" height="18" fill="none" stroke="currentColor"
+              stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>匯出 Word（含照片，A4）</button>
+          <button class="exp-btn" id="m-html"><svg width="18" height="18" fill="none" stroke="currentColor"
+              stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>匯出 HTML（含照片放大）</button>
+          <button class="exp-btn" id="m-csv"><svg width="18" height="18" fill="none" stroke="currentColor"
+              stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+            </svg>匯出 Excel（CSV）</button>
+        </div>
       </div>
     </div>
 
@@ -1368,7 +1427,7 @@
           </svg>匯出進度報告（Word）</button>
       </div>
     </div>
-    <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">v1.5.4</div>
+    <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">v1.6.0</div>
   </div>
 
 
@@ -1402,6 +1461,8 @@
     var sType = sTypes[0], sRes = 'pass', sPh = [];
     var mType = mTypes[0], mRes = 'accept', mPh = [];
     var dEditing = null;
+    var sEditing = null;
+    var mEditing = null;
     var pEditing = null;
 
     var PL = { urgent: '🔴 緊急', high: '🟠 高', normal: '🟢 一般', low: '⚪ 低' };
@@ -1551,10 +1612,10 @@
         document.getElementById('module-' + m).style.display = m === mod ? 'block' : 'none';
         document.getElementById('mod-' + m).className = 'module-btn' + (m === mod ? ' mod-' + m[0] : '');
       });
-      if (mod === 'defect') { renderDChips(); switchDTab('list'); }
-      if (mod === 'safety') { renderSChips(); switchSTab('hist'); }
-      if (mod === 'material') { renderMChips(); switchMTab('list'); }
-      if (mod === 'progress') { switchPTab('list'); }
+      if (mod === 'defect') { renderDChips(); switchDTab('list', true); }
+      if (mod === 'safety') { renderSChips(); switchSTab('list', true); }
+      if (mod === 'material') { renderMChips(); switchMTab('list', true); }
+      if (mod === 'progress') { switchPTab('list', true); }
     }
     document.getElementById('mod-defect').addEventListener('click', function () { switchMod('defect'); });
     document.getElementById('mod-safety').addEventListener('click', function () { switchMod('safety'); });
@@ -1578,8 +1639,8 @@
     // ══════════════════════════════
     // 缺失管理
     // ══════════════════════════════
-    function switchDTab(t) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    function switchDTab(t, skipScroll) {
+      if (!skipScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
       ['list', 'add', 'exp'].forEach(function (n) {
         document.getElementById('dt-' + n + '-btn').className = 'tab' + (t === n ? ' td' : '');
         document.getElementById('dt-' + n).style.display = t === n ? 'block' : 'none';
@@ -1648,7 +1709,6 @@
     document.getElementById('d-fs').addEventListener('change', renderDList);
     document.getElementById('d-fp').addEventListener('change', renderDList);
     document.getElementById('d-ft').addEventListener('change', renderDList);
-    document.getElementById('proj-name').addEventListener('input', function () { document.getElementById('proj-display').textContent = this.value || '工地管理'; });
 
     function renderDList() {
       rebuildDFT();
@@ -1685,9 +1745,9 @@
         if (d.desc) { var dm = document.createElement('div'); dm.style.cssText = 'font-size:13px;color:#666;margin:5px 0 8px;'; dm.textContent = d.desc; card.appendChild(dm); }
 
         var photos = d.photos || [];
-        if (photos.length) { var l1 = mkPhlbl('現況照片', '#555'); card.appendChild(l1); card.appendChild(mkPhRow(photos, isEd, d.id, 'photos')); }
+        if (photos.length) { var l1 = mkPhlbl('現況照片', '#555'); card.appendChild(l1); card.appendChild(mkPhRow(photos, isEd, d.id, 'photos', 'd')); }
         var fixPhotos = d.fixPhotos || [];
-        if (fixPhotos.length) { var l2 = mkPhlbl('改善後照片', '#3B6D11'); card.appendChild(l2); card.appendChild(mkPhRow(fixPhotos, isEd, d.id, 'fixPhotos')); }
+        if (fixPhotos.length) { var l2 = mkPhlbl('改善後照片', '#3B6D11'); card.appendChild(l2); card.appendChild(mkPhRow(fixPhotos, isEd, d.id, 'fixPhotos', 'd')); }
 
         // ── 編輯面板（修復版）──
         if (isEd) {
@@ -1830,7 +1890,7 @@
       });
     }
 
-    function mkPhRow(photos, isEd, recId, field) {
+    function mkPhRow(photos, isEd, recId, field, type) {
       var wrap = document.createElement('div'); wrap.className = 'photo-row';
       photos.forEach(function (p, idx) {
         var pw = document.createElement('div'); pw.className = 'pw';
@@ -1839,13 +1899,21 @@
         pw.appendChild(img);
         if (isEd) {
           var db = document.createElement('button'); db.className = 'del-ph'; db.textContent = '×';
-          (function (i, fld, rid) {
+          (function (i, fld, rid, t) {
             db.addEventListener('click', function (e) {
               e.stopPropagation();
-              defects = defects.map(function (x) { if (x.id !== rid) return x; var c = Object.assign({}, x); c[fld] = c[fld].filter(function (_, ii) { return ii !== i; }); return c; });
-              saveD(); renderDList();
+              if (t === 'd') {
+                defects = defects.map(function (x) { if (x.id !== rid) return x; var c = Object.assign({}, x); c[fld] = c[fld].filter(function (_, ii) { return ii !== i; }); return c; });
+                saveD(); renderDList();
+              } else if (t === 's') {
+                safetyLogs = safetyLogs.map(function (x) { if (x.id !== rid) return x; var c = Object.assign({}, x); c.photos = (c.photos || []).filter(function (_, ii) { return ii !== i; }); return c; });
+                saveS(); renderSList();
+              } else if (t === 'm') {
+                matLogs = matLogs.map(function (x) { if (x.id !== rid) return x; var c = Object.assign({}, x); c.photos = (c.photos || []).filter(function (_, ii) { return ii !== i; }); return c; });
+                saveM(); renderMList();
+              }
             });
-          })(idx, field, recId);
+          })(idx, field, recId, type);
           pw.appendChild(db);
         }
         wrap.appendChild(pw);
@@ -1907,14 +1975,21 @@
     // ══════════════════════════════
     // 工安巡檢
     // ══════════════════════════════
-    function switchSTab(t) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      ['form', 'hist'].forEach(function (n) { document.getElementById('st-' + n + '-btn').className = 'tab' + (t === n ? ' ts' : ''); document.getElementById('st-' + n).style.display = t === n ? 'block' : 'none'; });
-      if (t === 'form') renderSChips();
-      if (t === 'hist') renderSList();
+    function switchSTab(t, skipScroll) {
+      if (!skipScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+      ['list', 'add', 'exp'].forEach(function (n) {
+        var btn = document.getElementById('st-' + n + '-btn');
+        if (btn) btn.className = 'tab' + (t === n ? ' ts' : '');
+        var sec = document.getElementById('st-' + n);
+        if (sec) sec.style.display = t === n ? 'block' : 'none';
+      });
+      if (t === 'add') renderSChips();
+      if (t === 'list') renderSList();
+      if (t === 'exp') updateSExp();
     }
-    document.getElementById('st-form-btn').addEventListener('click', function () { switchSTab('form'); });
-    document.getElementById('st-hist-btn').addEventListener('click', function () { switchSTab('hist'); });
+    document.getElementById('st-add-btn').addEventListener('click', function () { switchSTab('add'); });
+    document.getElementById('st-list-btn').addEventListener('click', function () { switchSTab('list'); });
+    document.getElementById('st-exp-btn').addEventListener('click', function () { switchSTab('exp'); });
 
     function renderSChips() {
       if (!sTypes.includes(sType)) sType = sTypes[0] || '';
@@ -1952,7 +2027,7 @@
       saveS(); sPh.length = 0; document.getElementById('s-preview').innerHTML = '';
       document.getElementById('s-loc').value = ''; document.getElementById('s-desc').value = ''; document.getElementById('s-file').value = '';
       sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes(); toast('✅ 巡檢記錄已儲存');
-      setTimeout(function () { switchSTab('hist'); }, 150);
+      setTimeout(function () { switchSTab('list'); }, 150);
     });
 
     document.getElementById('s-fr').addEventListener('change', renderSList);
@@ -1962,12 +2037,17 @@
       rebuildSFT();
       var fr = document.getElementById('s-fr').value, ft = document.getElementById('s-ft').value;
       var list = safetyLogs.filter(function (d) { return (!fr || d.result === fr) && (!ft || d.type === ft); });
+      list.sort(function (a, b) {
+        if (a.result !== b.result) return a.result === 'fail' ? -1 : 1;
+        return b.id - a.id;
+      });
       document.getElementById('s-total').textContent = safetyLogs.length;
       document.getElementById('s-pass-n').textContent = safetyLogs.filter(function (d) { return d.result === 'pass'; }).length;
       document.getElementById('s-fail-n').textContent = safetyLogs.filter(function (d) { return d.result === 'fail'; }).length;
       var el = document.getElementById('safety-list'); el.innerHTML = '';
       if (!list.length) { el.innerHTML = '<div class="empty">目前沒有巡檢記錄</div>'; return; }
       list.forEach(function (d) {
+        var isEd = sEditing === d.id;
         var card = document.createElement('div'); card.className = 'rcard cs-card';
         var hdr = document.createElement('div'); hdr.className = 'rhdr';
         var left = document.createElement('div');
@@ -1977,38 +2057,148 @@
         var bdg = document.createElement('span'); bdg.className = 'badge ' + (d.result === 'pass' ? 'bpass' : 'bfail'); bdg.textContent = d.result === 'pass' ? '✅ 通過' : '❌ 不合格';
         hdr.appendChild(left); hdr.appendChild(bdg); card.appendChild(hdr);
         if (d.desc) { var dm = document.createElement('div'); dm.style.cssText = 'font-size:13px;color:#666;margin:5px 0 8px;'; dm.textContent = d.desc; card.appendChild(dm); }
-        if ((d.photos || []).length) { card.appendChild(mkPhlbl('巡檢照片', '#E67E22')); card.appendChild(mkSPhRow(d.photos)); }
+
+        if ((d.photos || []).length) {
+          card.appendChild(mkPhlbl('巡檢照片', '#E67E22'));
+          card.appendChild(mkPhRow(d.photos, isEd, d.id, 'photos', 's'));
+        }
+
+        if (isEd) {
+          var ep = document.createElement('div'); ep.className = 'ep';
+          var locLbl = document.createElement('span'); locLbl.className = 'ep-lbl'; locLbl.textContent = '巡檢地點';
+          var locInp = document.createElement('input'); locInp.type = 'text'; locInp.value = d.location;
+          ep.appendChild(locLbl); ep.appendChild(locInp);
+
+          var typLbl = document.createElement('span'); typLbl.className = 'ep-lbl'; typLbl.textContent = '巡檢項目';
+          var typSel = document.createElement('select');
+          sTypes.forEach(function (t) { var o = document.createElement('option'); o.value = t; o.textContent = t; if (t === d.type) o.selected = true; typSel.appendChild(o); });
+          ep.appendChild(typLbl); ep.appendChild(typSel);
+
+          var resLbl = document.createElement('span'); resLbl.className = 'ep-lbl'; resLbl.textContent = '巡檢結果';
+          var resSel = document.createElement('select');
+          [{ v: 'pass', t: '✅ 通過' }, { v: 'fail', t: '❌ 不合格' }].forEach(function (o) {
+            var opt = document.createElement('option'); opt.value = o.v; opt.textContent = o.t; if (o.v === d.result) opt.selected = true; resSel.appendChild(opt);
+          });
+          ep.appendChild(resLbl); ep.appendChild(resSel);
+
+          var descLbl = document.createElement('span'); descLbl.className = 'ep-lbl'; descLbl.textContent = '備註';
+          var descTa = document.createElement('textarea'); descTa.value = d.desc || '';
+          ep.appendChild(descLbl); ep.appendChild(descTa);
+
+          var apLbl = document.createElement('label'); apLbl.className = 'ep-add-ph'; apLbl.textContent = '＋ 新增巡檢照片';
+          var apInp = document.createElement('input'); apInp.type = 'file'; apInp.accept = 'image/*'; apInp.multiple = true;
+          (function (id) {
+            apInp.addEventListener('change', function () {
+              var txt = (locInp.value.trim() + '\n' + descTa.value.trim()).trim();
+              var files = Array.from(this.files); var count = 0;
+              files.forEach(function (f) {
+                var r = new FileReader(); r.onload = function (e) {
+                  stamp(e.target.result, txt, function (s) {
+                    safetyLogs = safetyLogs.map(function (x) { if (x.id !== id) return x; var c = Object.assign({}, x); c.photos = (c.photos || []).concat([s]); return c; });
+                    count++; if (count === files.length) { saveS(); renderSList(); }
+                  });
+                }; r.readAsDataURL(f);
+              });
+              this.value = '';
+            });
+          })(d.id);
+          apLbl.appendChild(apInp); ep.appendChild(apLbl);
+
+          var saveBtn = document.createElement('button'); saveBtn.className = 'ep-save'; saveBtn.style.background = '#E67E22'; saveBtn.textContent = '儲存';
+          (function (id, li, ts, rs, ta) {
+            saveBtn.addEventListener('click', function () {
+              var nloc = li.value.trim(); if (!nloc) { toast('⚠️ 地點不可空白'); return; }
+              safetyLogs = safetyLogs.map(function (x) { return x.id === id ? Object.assign({}, x, { location: nloc, type: ts.value, result: rs.value, desc: ta.value.trim() }) : x; });
+              saveS(); sEditing = null; toast('✅ 已儲存'); renderSList();
+            });
+          })(d.id, locInp, typSel, resSel, descTa);
+          ep.appendChild(saveBtn); card.appendChild(ep);
+        }
+
         var ar = document.createElement('div'); ar.className = 'ar';
-        (function (id, loc) { var b = document.createElement('button'); b.className = 'abtn'; b.style.color = '#C0392B'; b.textContent = '刪除'; b.addEventListener('click', function () { dlg('確認刪除', '確定刪除「' + loc + '」巡檢記錄？', '確定刪除', '#C0392B', function () { safetyLogs = safetyLogs.filter(function (x) { return x.id !== id; }); saveS(); toast('已刪除'); renderSList(); }); }); ar.appendChild(b); })(d.id, d.location);
+        // 編輯按鈕
+        (function (id) {
+          var b = document.createElement('button'); b.className = 'abtn'; b.style.color = '#444'; b.textContent = isEd ? '取消' : '編輯';
+          b.addEventListener('click', function () { sEditing = (sEditing === id) ? null : id; renderSList(); });
+          ar.appendChild(b);
+        })(d.id);
+
+        // 刪除按鈕
+        (function (id, loc) {
+          var b = document.createElement('button'); b.className = 'abtn'; b.style.color = '#C0392B'; b.textContent = '刪除';
+          b.addEventListener('click', function () {
+            dlg('確認刪除', '確定刪除「' + loc + '」巡檢記錄？', '確定刪除', '#C0392B', function () {
+              safetyLogs = safetyLogs.filter(function (x) { return x.id !== id; }); saveS(); toast('已刪除'); renderSList();
+            });
+          });
+          ar.appendChild(b);
+        })(d.id, d.location);
+
         card.appendChild(ar); el.appendChild(card);
       });
     }
-    function mkSPhRow(photos) {
-      var wrap = document.createElement('div'); wrap.className = 'photo-row';
-      photos.forEach(function (p, idx) { var pw = document.createElement('div'); pw.className = 'pw'; var img = document.createElement('img'); img.src = p; (function (i) { img.addEventListener('click', function () { openLb(photos, i); }); })(idx); pw.appendChild(img); wrap.appendChild(pw); });
-      return wrap;
+
+    // ── 巡檢匯出 ──
+    function getSExp() { var er = document.getElementById('s-er').value, et = document.getElementById('s-et').value; return safetyLogs.filter(function (d) { return (!er || d.result === er) && (!et || d.type === et); }); }
+    function updateSExp() {
+      var s = document.getElementById('s-et'), c = s.value;
+      s.innerHTML = '<option value="">全部項目</option>' + sTypes.map(function (t) { return '<option value="' + t + '"' + (c === t ? ' selected' : '') + '>' + t + '</option>'; }).join('');
+      document.getElementById('s-ecount').textContent = '共 ' + getSExp().length + ' 筆';
     }
+    document.getElementById('s-er').addEventListener('change', updateSExp);
+    document.getElementById('s-et').addEventListener('change', updateSExp);
 
     document.getElementById('s-word').addEventListener('click', function () {
-      if (!safetyLogs.length) { toast('⚠️ 沒有巡檢記錄'); return; }
+      var list = getSExp(); if (!list.length) { toast('⚠️ 沒有符合條件的記錄'); return; }
       var proj = document.getElementById('proj-name').value || '工安巡檢報告', mgr = document.getElementById('proj-mgr').value || '';
-      var ps = safetyLogs.filter(function (d) { return d.result === 'pass'; }).length, fl = safetyLogs.filter(function (d) { return d.result === 'fail'; }).length;
-      var rows = safetyLogs.map(function (d, i) { var rc = d.result === 'pass' ? '#27AE60' : '#C0392B', rb = d.result === 'pass' ? '#EAF5EA' : '#FDECEA'; var ph = ''; if ((d.photos || []).length) { ph = '<tr><td colspan="2" style="padding:8px;"><div style="display:flex;flex-wrap:wrap;gap:8px;">' + (d.photos || []).map(function (p) { return '<img src="' + p + '" style="height:8cm;width:auto;max-width:10cm;object-fit:cover;border-radius:4px;border:1px solid #ddd;">'; }).join('') + '</div></td></tr>'; } return '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;page-break-inside:avoid;border:1px solid #ccc;"><tr style="background:#E67E22;"><td colspan="2" style="padding:8px 10px;color:#fff;font-weight:700;font-size:13px;">' + (i + 1) + '. ' + esc(d.location) + '<span style="float:right;background:' + rb + ';color:' + rc + ';padding:2px 9px;border-radius:999px;font-size:11px;">' + (d.result === 'pass' ? '✅ 通過' : '❌ 不合格') + '</span></td></tr><tr style="background:#f5f5f5;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;width:70px;">巡檢項目</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.type) + '</td></tr><tr><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">日期</td><td style="padding:6px 10px;font-size:12px;">' + d.createdAt + '</td></tr>' + (d.desc ? '<tr style="background:#f9f9f9;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">備註</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.desc) + '</td></tr>' : '') + ph + '</table>'; }).join('');
-      var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>工安巡檢報告</title><style>@page{size:A4;margin:18mm 15mm;}body{font-family:"Arial","微軟正黑體",sans-serif;font-size:13px;color:#111;}@media print{body{margin:0;}}</style></head><body><div style="border-bottom:3px solid #E67E22;padding-bottom:10px;margin-bottom:14px;"><div style="font-size:20px;font-weight:700;color:#E67E22;">' + esc(proj) + '</div><div style="font-size:12px;color:#888;margin-top:4px;">工地主任：' + esc(mgr) + '　匯出日期：' + todayStr() + '　共 ' + safetyLogs.length + ' 筆</div></div><table style="width:100%;border-collapse:collapse;margin-bottom:14px;"><tr><td style="padding:10px;text-align:center;background:#F5F5F5;border:1px solid #ddd;"><div style="font-size:22px;font-weight:700;">' + safetyLogs.length + '</div><div style="font-size:11px;color:#666;">共計</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#EAF5EA;border:1px solid #A9DFBF;"><div style="font-size:22px;font-weight:700;color:#27AE60;">' + ps + '</div><div style="font-size:11px;color:#666;">通過</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#FDECEA;border:1px solid #F1948A;"><div style="font-size:22px;font-weight:700;color:#C0392B;">' + fl + '</div><div style="font-size:11px;color:#666;">不合格</div></td></tr></table>' + rows + '</body></html>';
-      dlBlob(new Blob([html], { type: 'application/vnd.ms-word;charset=utf-8' }), '工安巡檢報告_' + todayStr().replace(/\//g, '') + '.doc'); toast('✅ 工安報告已下載');
+      var ps = list.filter(function (d) { return d.result === 'pass'; }).length, fl = list.filter(function (d) { return d.result === 'fail'; }).length;
+      var rows = list.map(function (d, i) { var rc = d.result === 'pass' ? '#27AE60' : '#C0392B', rb = d.result === 'pass' ? '#EAF5EA' : '#FDECEA'; var ph = ''; if ((d.photos || []).length) { ph = '<tr><td colspan="2" style="padding:8px;"><div style="display:flex;flex-wrap:wrap;gap:8px;">' + (d.photos || []).map(function (p) { return '<img src="' + p + '" style="height:8cm;width:auto;max-width:10cm;object-fit:cover;border-radius:4px;border:1px solid #ddd;">'; }).join('') + '</div></td></tr>'; } return '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;page-break-inside:avoid;border:1px solid #ccc;"><tr style="background:#E67E22;"><td colspan="2" style="padding:8px 10px;color:#fff;font-weight:700;font-size:13px;">' + (i + 1) + '. ' + esc(d.location) + '<span style="float:right;background:' + rb + ';color:' + rc + ';padding:2px 9px;border-radius:999px;font-size:11px;">' + (d.result === 'pass' ? '✅ 通過' : '❌ 不合格') + '</span></td></tr><tr style="background:#f5f5f5;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;width:70px;">巡檢項目</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.type) + '</td></tr><tr><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">日期</td><td style="padding:6px 10px;font-size:12px;">' + d.createdAt + '</td></tr>' + (d.desc ? '<tr style="background:#f9f9f9;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">備註</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.desc) + '</td></tr>' : '') + ph + '</table>'; }).join('');
+      var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>工安巡檢報告</title><style>@page{size:A4;margin:18mm 15mm;}body{font-family:"Arial","微軟正黑體",sans-serif;font-size:13px;color:#111;}@media print{body{margin:0;}}</style></head><body><div style="border-bottom:3px solid #E67E22;padding-bottom:10px;margin-bottom:14px;"><div style="font-size:20px;font-weight:700;color:#E67E22;">' + esc(proj) + '</div><div style="font-size:12px;color:#888;margin-top:4px;">工地主任：' + esc(mgr) + '　匯出日期：' + todayStr() + '　共 ' + list.length + ' 筆</div></div><table style="width:100%;border-collapse:collapse;margin-bottom:14px;"><tr><td style="padding:10px;text-align:center;background:#F5F5F5;border:1px solid #ddd;"><div style="font-size:22px;font-weight:700;">' + list.length + '</div><div style="font-size:11px;color:#666;">共計</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#EAF5EA;border:1px solid #A9DFBF;"><div style="font-size:22px;font-weight:700;color:#27AE60;">' + ps + '</div><div style="font-size:11px;color:#666;">通過</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#FDECEA;border:1px solid #F1948A;"><div style="font-size:22px;font-weight:700;color:#C0392B;">' + fl + '</div><div style="font-size:11px;color:#666;">不合格</div></td></tr></table>' + rows + '</body></html>';
+      dlBlob(new Blob([html], { type: 'application/vnd.ms-word;charset=utf-8' }), '工安巡檢報告_' + todayStr().replace(/\//g, '') + '.doc'); toast('✅ Word 已下載');
+    });
+
+    document.getElementById('s-html').addEventListener('click', function () {
+      var list = getSExp(); if (!list.length) { toast('⚠️ 沒有符合條件的記錄'); return; }
+      var proj = document.getElementById('proj-name').value || '工安巡檢報告', mgr = document.getElementById('proj-mgr').value || '';
+      var ps = list.filter(function (d) { return d.result === 'pass'; }).length, fl = list.filter(function (d) { return d.result === 'fail'; }).length;
+      var ag = list.map(function (d) { return d.photos || []; });
+      var body = list.map(function (d, i) {
+        var rc = d.result === 'pass' ? '#27AE60' : '#C0392B', rb = d.result === 'pass' ? '#EAF5EA' : '#FDECEA';
+        var ap = (d.photos || []).map(function (p, j) { return { src: p, gi: i, pi: j }; });
+        var ph = ''; if (ap.length) { ph = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">' + ap.map(function (p) { return '<div style="cursor:pointer;" onclick="openLb(' + p.gi + ',' + p.pi + ')"><img src="' + p.src + '" style="height:8cm;width:auto;max-width:12cm;object-fit:cover;border-radius:6px;border:1px solid #ddd;"></div>'; }).join('') + '</div>'; }
+        return '<div style="border:1px solid #ddd;border-left:4px solid #E67E22;border-radius:8px;padding:14px;margin-bottom:14px;page-break-inside:avoid;"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;margin-bottom:6px;"><div><span style="font-size:15px;font-weight:700;">' + (i + 1) + '. ' + esc(d.location) + '</span><div style="font-size:12px;color:#888;margin-top:3px;">' + esc(d.type) + ' ・ ' + d.createdAt + '</div></div><span style="background:' + rb + ';color:' + rc + ';padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;">' + (d.result === 'pass' ? '✅ 通過' : '❌ 不合格') + '</span></div>' + (d.desc ? '<div style="font-size:13px;color:#555;margin:6px 0;">備註：' + esc(d.desc) + '</div>' : '') + ph + '</div>';
+      }).join('');
+      var lbs = '<script>\nvar _g=' + JSON.stringify(ag) + ';\nvar _gi=0,_pi=0;\nfunction openLb(g,p){_gi=g;_pi=p;document.getElementById("_img").src=_g[g][p];document.getElementById("_c").textContent=(p+1)+" / "+_g[g].length;document.getElementById("_lb").style.display="flex";}\nfunction _cl(){document.getElementById("_lb").style.display="none";}\nfunction _nv(d){_pi=(_pi+d+_g[_gi].length)%_g[_gi].length;document.getElementById("_img").src=_g[_gi][_pi];document.getElementById("_c").textContent=(_pi+1)+" / "+_g[_gi].length;}\ndocument.addEventListener("keydown",function(e){if(document.getElementById("_lb").style.display!=="flex")return;if(e.key==="Escape")_cl();if(e.key==="ArrowLeft")_nv(-1);if(e.key==="ArrowRight")_nv(1);});\n<\/script>';
+      var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + esc(proj) + '</title><style>@page{size:A4;margin:15mm}body{font-family:sans-serif;padding:20px;font-size:13px;max-width:900px;margin:0 auto}@media print{body{padding:0}#_lb{display:none!important}}#_lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;flex-direction:column;align-items:center;justify-content:center;}#_img{max-width:94vw;max-height:80vh;object-fit:contain;border-radius:6px;cursor:pointer;}._lbc{position:absolute;top:14px;right:18px;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;}._lbn{display:flex;gap:24px;margin-top:12px;}._lbn button{background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:24px;padding:8px 18px;border-radius:8px;cursor:pointer;}#_c{color:#ccc;font-size:12px;margin-top:8px;}</style></head><body><div id="_lb"><button class="_lbc" onclick="_cl()">×</button><img id="_img" src="" onclick="_nv(1)"><div class="_lbn"><button onclick="_nv(-1)">‹</button><button onclick="_nv(1)">›</button></div><div id="_c"></div></div><div style="border-bottom:3px solid #E67E22;padding-bottom:10px;margin-bottom:14px;"><h1 style="font-size:20px;color:#E67E22;margin-bottom:4px;">' + esc(proj) + '</h1><p style="color:#888;font-size:12px;">工地主任：' + esc(mgr) + '　匯出日期：' + todayStr() + '</p></div><div style="display:flex;gap:10px;margin-bottom:16px;"><div style="flex:1;padding:10px;text-align:center;background:#f5f5f5;border-radius:8px;border:1px solid #ddd;"><div style="font-size:22px;font-weight:700;">' + list.length + '</div><div style="font-size:11px;color:#666;">共計</div></div><div style="flex:1;padding:10px;text-align:center;background:#EAF5EA;border-radius:8px;border:1px solid #A9DFBF;"><div style="font-size:22px;font-weight:700;color:#27AE60;">' + ps + '</div><div style="font-size:11px;color:#666;">通過</div></div><div style="flex:1;padding:10px;text-align:center;background:#FDECEA;border-radius:8px;border:1px solid #F1948A;"><div style="font-size:22px;font-weight:700;color:#C0392B;">' + fl + '</div><div style="font-size:11px;color:#666;">不合格</div></div></div>' + body + lbs + '</body></html>';
+      dlBlob(new Blob([html], { type: 'text/html;charset=utf-8' }), '巡檢報告_' + todayStr().replace(/\//g, '') + '.html'); toast('✅ HTML 報告已下載');
+    });
+
+    document.getElementById('s-csv').addEventListener('click', function () {
+      var list = getSExp(); if (!list.length) { toast('⚠️ 沒有符合條件的記錄'); return; }
+      var rows = [['編號', '地點', '巡檢項目', '結果', '備註', '日期', '照片數']];
+      list.forEach(function (d, i) { rows.push([i + 1, d.location, d.type, (d.result === 'pass' ? '通過' : '不合格'), d.desc || '', d.createdAt, (d.photos || []).length]); });
+      var csv = '\uFEFF' + rows.map(function (r) { return r.map(function (c) { return '"' + String(c || '').replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+      dlBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), '巡檢報告_' + todayStr().replace(/\//g, '') + '.csv'); toast('✅ CSV 已下載');
     });
 
     // ══════════════════════════════
     // 材料驗收
     // ══════════════════════════════
-    function switchMTab(t) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      ['add', 'list'].forEach(function (n) { document.getElementById('mt-' + n + '-btn').className = 'tab' + (t === n ? ' tm' : ''); document.getElementById('mt-' + n).style.display = t === n ? 'block' : 'none'; });
+    function switchMTab(t, skipScroll) {
+      if (!skipScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+      ['add', 'list', 'exp'].forEach(function (n) {
+        var btn = document.getElementById('mt-' + n + '-btn');
+        if (btn) btn.className = 'tab' + (t === n ? ' tm' : '');
+        var sec = document.getElementById('mt-' + n);
+        if (sec) sec.style.display = t === n ? 'block' : 'none';
+      });
       if (t === 'add') renderMChips();
       if (t === 'list') renderMList();
+      if (t === 'exp') updateMExp();
     }
     document.getElementById('mt-add-btn').addEventListener('click', function () { switchMTab('add'); });
     document.getElementById('mt-list-btn').addEventListener('click', function () { switchMTab('list'); });
+    document.getElementById('mt-exp-btn').addEventListener('click', function () { switchMTab('exp'); });
 
     function renderMChips() {
       if (!mTypes.includes(mType)) mType = mTypes[0] || '';
@@ -2064,12 +2254,20 @@
       rebuildMFT();
       var fr = document.getElementById('m-fr').value, ft = document.getElementById('m-ft').value;
       var list = matLogs.filter(function (d) { return (!fr || d.result === fr) && (!ft || d.type === ft); });
+      var MRO = { reject: 0, partial: 1, accept: 2 };
+      list.sort(function (a, b) {
+        var ra = MRO[a.result] !== undefined ? MRO[a.result] : 2;
+        var rb = MRO[b.result] !== undefined ? MRO[b.result] : 2;
+        if (ra !== rb) return ra - rb;
+        return b.id - a.id;
+      });
       document.getElementById('m-total').textContent = matLogs.length;
       document.getElementById('m-accept-n').textContent = matLogs.filter(function (d) { return d.result === 'accept'; }).length;
       document.getElementById('m-reject-n').textContent = matLogs.filter(function (d) { return d.result === 'reject'; }).length;
       var el = document.getElementById('material-list'); el.innerHTML = '';
       if (!list.length) { el.innerHTML = '<div class="empty">目前沒有驗收記錄</div>'; return; }
       list.forEach(function (d) {
+        var isEd = mEditing === d.id;
         var card = document.createElement('div'); card.className = 'rcard cm-card';
         var hdr = document.createElement('div'); hdr.className = 'rhdr';
         var left = document.createElement('div');
@@ -2079,35 +2277,135 @@
         var bdg = document.createElement('span'); bdg.className = 'badge ' + mResBadge(d.result); bdg.textContent = mResLabel(d.result);
         hdr.appendChild(left); hdr.appendChild(bdg); card.appendChild(hdr);
         if (d.desc) { var dm = document.createElement('div'); dm.style.cssText = 'font-size:13px;color:#666;margin:5px 0 8px;'; dm.textContent = d.desc; card.appendChild(dm); }
-        if ((d.photos || []).length) { card.appendChild(mkPhlbl('驗收照片', '#27AE60')); card.appendChild(mkSPhRow(d.photos)); }
+
+        if ((d.photos || []).length) {
+          card.appendChild(mkPhlbl('驗收照片', '#27AE60'));
+          card.appendChild(mkPhRow(d.photos, isEd, d.id, 'photos', 'm'));
+        }
+
+        if (isEd) {
+          var ep = document.createElement('div'); ep.className = 'ep';
+          var nameLbl = document.createElement('span'); nameLbl.className = 'ep-lbl'; nameLbl.textContent = '材料名稱';
+          var nameInp = document.createElement('input'); nameInp.type = 'text'; nameInp.value = d.name;
+          ep.appendChild(nameLbl); ep.appendChild(nameInp);
+
+          var typLbl = document.createElement('span'); typLbl.className = 'ep-lbl'; typLbl.textContent = '類型';
+          var typSel = document.createElement('select');
+          mTypes.forEach(function (t) { var o = document.createElement('option'); o.value = t; o.textContent = t; if (t === d.type) o.selected = true; typSel.appendChild(o); });
+          ep.appendChild(typLbl); ep.appendChild(typSel);
+
+          var qtyLbl = document.createElement('span'); qtyLbl.className = 'ep-lbl'; qtyLbl.textContent = '數量規格';
+          var qtyInp = document.createElement('input'); qtyInp.type = 'text'; qtyInp.value = d.qty || '';
+          ep.appendChild(qtyLbl); ep.appendChild(qtyInp);
+
+          var venLbl = document.createElement('span'); venLbl.className = 'ep-lbl'; venLbl.textContent = '廠商';
+          var venInp = document.createElement('input'); venInp.type = 'text'; venInp.value = d.vendor || '';
+          ep.appendChild(venLbl); ep.appendChild(venInp);
+
+          var resLbl = document.createElement('span'); resLbl.className = 'ep-lbl'; resLbl.textContent = '驗收結果';
+          var resSel = document.createElement('select');
+          [{ v: 'accept', t: '✅ 合格' }, { v: 'partial', t: '⚠️ 部分合格' }, { v: 'reject', t: '❌ 退料' }].forEach(function (o) {
+            var opt = document.createElement('option'); opt.value = o.v; opt.textContent = o.t; if (o.v === d.result) opt.selected = true; resSel.appendChild(opt);
+          });
+          ep.appendChild(resLbl); ep.appendChild(resSel);
+
+          var descLbl = document.createElement('span'); descLbl.className = 'ep-lbl'; descLbl.textContent = '備註';
+          var descTa = document.createElement('textarea'); descTa.value = d.desc || '';
+          ep.appendChild(descLbl); ep.appendChild(descTa);
+
+          var apLbl = document.createElement('label'); apLbl.className = 'ep-add-ph'; apLbl.textContent = '＋ 新增驗收照片';
+          var apInp = document.createElement('input'); apInp.type = 'file'; apInp.accept = 'image/*'; apInp.multiple = true;
+          (function (id) {
+            apInp.addEventListener('change', function () {
+              var txt = (nameInp.value.trim() + '\n' + descTa.value.trim()).trim();
+              var files = Array.from(this.files); var count = 0;
+              files.forEach(function (f) {
+                var r = new FileReader(); r.onload = function (e) {
+                  stamp(e.target.result, txt, function (s) {
+                    matLogs = matLogs.map(function (x) { if (x.id !== id) return x; var c = Object.assign({}, x); c.photos = (c.photos || []).concat([s]); return c; });
+                    count++; if (count === files.length) { saveM(); renderMList(); }
+                  });
+                }; r.readAsDataURL(f);
+              });
+              this.value = '';
+            });
+          })(d.id);
+          apLbl.appendChild(apInp); ep.appendChild(apLbl);
+
+          var saveBtn = document.createElement('button'); saveBtn.className = 'ep-save'; saveBtn.style.background = '#27AE60'; saveBtn.textContent = '儲存';
+          (function (id, ni, ts, qi, vi, rs, ta) {
+            saveBtn.addEventListener('click', function () {
+              var nn = ni.value.trim(); if (!nn) { toast('⚠️ 名稱不可空白'); return; }
+              matLogs = matLogs.map(function (x) { return x.id === id ? Object.assign({}, x, { name: nn, type: ts.value, qty: qi.value.trim(), vendor: vi.value.trim(), result: rs.value, desc: ta.value.trim() }) : x; });
+              saveM(); mEditing = null; toast('✅ 已儲存'); renderMList();
+            });
+          })(d.id, nameInp, typSel, qtyInp, venInp, resSel, descTa);
+          ep.appendChild(saveBtn); card.appendChild(ep);
+        }
+
         var ar = document.createElement('div'); ar.className = 'ar';
+        (function (id) {
+          var b = document.createElement('button'); b.className = 'abtn'; b.style.color = '#444'; b.textContent = isEd ? '取消' : '編輯';
+          b.addEventListener('click', function () { mEditing = (mEditing === id) ? null : id; renderMList(); });
+          ar.appendChild(b);
+        })(d.id);
+
         (function (id, name) { var b = document.createElement('button'); b.className = 'abtn'; b.style.color = '#C0392B'; b.textContent = '刪除'; b.addEventListener('click', function () { dlg('確認刪除', '確定刪除「' + name + '」驗收記錄？', '確定刪除', '#C0392B', function () { matLogs = matLogs.filter(function (x) { return x.id !== id; }); saveM(); toast('已刪除'); renderMList(); }); }); ar.appendChild(b); })(d.id, d.name);
         card.appendChild(ar); el.appendChild(card);
       });
     }
 
+    // ── 材料匯出 ──
+    function getMExp() { var er = document.getElementById('m-er').value, et = document.getElementById('m-et').value; return matLogs.filter(function (d) { return (!er || d.result === er) && (!et || d.type === et); }); }
+    function updateMExp() {
+      var s = document.getElementById('m-et'), c = s.value;
+      s.innerHTML = '<option value="">全部類型</option>' + mTypes.map(function (t) { return '<option value="' + t + '"' + (c === t ? ' selected' : '') + '>' + t + '</option>'; }).join('');
+      document.getElementById('m-ecount').textContent = '共 ' + getMExp().length + ' 筆';
+    }
+    document.getElementById('m-er').addEventListener('change', updateMExp);
+    document.getElementById('m-et').addEventListener('change', updateMExp);
+
     document.getElementById('m-word').addEventListener('click', function () {
-      if (!matLogs.length) { toast('⚠️ 沒有驗收記錄'); return; }
+      var list = getMExp(); if (!list.length) { toast('⚠️ 沒有符合條件的記錄'); return; }
       var proj = document.getElementById('proj-name').value || '材料驗收報告', mgr = document.getElementById('proj-mgr').value || '';
-      var ac = matLogs.filter(function (d) { return d.result === 'accept'; }).length, rj = matLogs.filter(function (d) { return d.result === 'reject'; }).length;
-      var rows = matLogs.map(function (d, i) { var rc = d.result === 'accept' ? '#27AE60' : d.result === 'partial' ? '#E67E22' : '#C0392B', rb = d.result === 'accept' ? '#EAF5EA' : d.result === 'partial' ? '#FEF3E2' : '#FDECEA'; var ph = ''; if ((d.photos || []).length) { ph = '<tr><td colspan="2" style="padding:8px;"><div style="display:flex;flex-wrap:wrap;gap:8px;">' + (d.photos || []).map(function (p) { return '<img src="' + p + '" style="height:8cm;width:auto;max-width:10cm;object-fit:cover;border-radius:4px;border:1px solid #ddd;">'; }).join('') + '</div></td></tr>'; } return '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;page-break-inside:avoid;border:1px solid #ccc;"><tr style="background:#27AE60;"><td colspan="2" style="padding:8px 10px;color:#fff;font-weight:700;font-size:13px;">' + (i + 1) + '. ' + esc(d.name) + '<span style="float:right;background:' + rb + ';color:' + rc + ';padding:2px 9px;border-radius:999px;font-size:11px;">' + mResLabel(d.result) + '</span></td></tr><tr style="background:#f5f5f5;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;width:70px;">類型</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.type) + '</td></tr>' + (d.qty ? '<tr><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">數量規格</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.qty) + '</td></tr>' : '') + (d.vendor ? '<tr style="background:#f5f5f5;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">廠商</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.vendor) + '</td></tr>' : '') + '<tr><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">驗收日期</td><td style="padding:6px 10px;font-size:12px;">' + d.createdAt + '</td></tr>' + (d.desc ? '<tr style="background:#f9f9f9;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">備註</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.desc) + '</td></tr>' : '') + ph + '</table>'; }).join('');
-      var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>材料驗收報告</title><style>@page{size:A4;margin:18mm 15mm;}body{font-family:"Arial","微軟正黑體",sans-serif;font-size:13px;color:#111;}@media print{body{margin:0;}}</style></head><body><div style="border-bottom:3px solid #27AE60;padding-bottom:10px;margin-bottom:14px;"><div style="font-size:20px;font-weight:700;color:#27AE60;">' + esc(proj) + '</div><div style="font-size:12px;color:#888;margin-top:4px;">工地主任：' + esc(mgr) + '　匯出日期：' + todayStr() + '　共 ' + matLogs.length + ' 筆</div></div><table style="width:100%;border-collapse:collapse;margin-bottom:14px;"><tr><td style="padding:10px;text-align:center;background:#F5F5F5;border:1px solid #ddd;"><div style="font-size:22px;font-weight:700;">' + matLogs.length + '</div><div style="font-size:11px;color:#666;">共計</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#EAF5EA;border:1px solid #A9DFBF;"><div style="font-size:22px;font-weight:700;color:#27AE60;">' + ac + '</div><div style="font-size:11px;color:#666;">合格</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#FDECEA;border:1px solid #F1948A;"><div style="font-size:22px;font-weight:700;color:#C0392B;">' + rj + '</div><div style="font-size:11px;color:#666;">退料</div></td></tr></table>' + rows + '</body></html>';
-      dlBlob(new Blob([html], { type: 'application/vnd.ms-word;charset=utf-8' }), '材料驗收報告_' + todayStr().replace(/\//g, '') + '.doc'); toast('✅ 驗收報告已下載');
+      var ac = list.filter(function (d) { return d.result === 'accept'; }).length, rj = list.filter(function (d) { return d.result === 'reject'; }).length;
+      var rows = list.map(function (d, i) { var rc = d.result === 'accept' ? '#27AE60' : d.result === 'partial' ? '#E67E22' : '#C0392B', rb = d.result === 'accept' ? '#EAF5EA' : d.result === 'partial' ? '#FEF3E2' : '#FDECEA'; var ph = ''; if ((d.photos || []).length) { ph = '<tr><td colspan="2" style="padding:8px;"><div style="display:flex;flex-wrap:wrap;gap:8px;">' + (d.photos || []).map(function (p) { return '<img src="' + p + '" style="height:8cm;width:auto;max-width:10cm;object-fit:cover;border-radius:4px;border:1px solid #ddd;">'; }).join('') + '</div></td></tr>'; } return '<table style="width:100%;border-collapse:collapse;margin-bottom:18px;page-break-inside:avoid;border:1px solid #ccc;"><tr style="background:#27AE60;"><td colspan="2" style="padding:8px 10px;color:#fff;font-weight:700;font-size:13px;">' + (i + 1) + '. ' + esc(d.name) + '<span style="float:right;background:' + rb + ';color:' + rc + ';padding:2px 9px;border-radius:999px;font-size:11px;">' + mResLabel(d.result) + '</span></td></tr><tr style="background:#f5f5f5;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;width:70px;">類型</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.type) + '</td></tr>' + (d.qty ? '<tr><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">數量規格</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.qty) + '</td></tr>' : '') + (d.vendor ? '<tr style="background:#f5f5f5;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">廠商</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.vendor) + '</td></tr>' : '') + '<tr><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">驗收日期</td><td style="padding:6px 10px;font-size:12px;">' + d.createdAt + '</td></tr>' + (d.desc ? '<tr style="background:#f9f9f9;"><td style="padding:6px 10px;font-size:11px;color:#666;font-weight:600;">備註</td><td style="padding:6px 10px;font-size:12px;">' + esc(d.desc) + '</td></tr>' : '') + ph + '</table>'; }).join('');
+      var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>材料驗收報告</title><style>@page{size:A4;margin:18mm 15mm;}body{font-family:"Arial","微軟正黑體",sans-serif;font-size:13px;color:#111;}@media print{body{margin:0;}}</style></head><body><div style="border-bottom:3px solid #27AE60;padding-bottom:10px;margin-bottom:14px;"><div style="font-size:20px;font-weight:700;color:#27AE60;">' + esc(proj) + '</div><div style="font-size:12px;color:#888;margin-top:4px;">工地主任：' + esc(mgr) + '　匯出日期：' + todayStr() + '　共 ' + list.length + ' 筆</div></div><table style="width:100%;border-collapse:collapse;margin-bottom:14px;"><tr><td style="padding:10px;text-align:center;background:#F5F5F5;border:1px solid #ddd;"><div style="font-size:22px;font-weight:700;">' + list.length + '</div><div style="font-size:11px;color:#666;">共計</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#EAF5EA;border:1px solid #A9DFBF;"><div style="font-size:22px;font-weight:700;color:#27AE60;">' + ac + '</div><div style="font-size:11px;color:#666;">合格</div></td><td style="width:8px;"></td><td style="padding:10px;text-align:center;background:#FDECEA;border:1px solid #F1948A;"><div style="font-size:22px;font-weight:700;color:#C0392B;">' + rj + '</div><div style="font-size:11px;color:#666;">退料</div></td></tr></table>' + rows + '</body></html>';
+      dlBlob(new Blob([html], { type: 'application/vnd.ms-word;charset=utf-8' }), '材料驗收報告_' + todayStr().replace(/\//g, '') + '.doc'); toast('✅ Word 已下載');
+    });
+
+    document.getElementById('m-html').addEventListener('click', function () {
+      var list = getMExp(); if (!list.length) { toast('⚠️ 沒有符合條件的記錄'); return; }
+      var proj = document.getElementById('proj-name').value || '材料驗收報告', mgr = document.getElementById('proj-mgr').value || '';
+      var ac = list.filter(function (d) { return d.result === 'accept'; }).length, rj = list.filter(function (d) { return d.result === 'reject'; }).length;
+      var ag = list.map(function (d) { return d.photos || []; });
+      var body = list.map(function (d, i) {
+        var rc = d.result === 'accept' ? '#27AE60' : d.result === 'partial' ? '#E67E22' : '#C0392B', rb = d.result === 'accept' ? '#EAF5EA' : d.result === 'partial' ? '#FEF3E2' : '#FDECEA';
+        var ap = (d.photos || []).map(function (p, j) { return { src: p, gi: i, pi: j }; });
+        var ph = ''; if (ap.length) { ph = '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">' + ap.map(function (p) { return '<div style="cursor:pointer;" onclick="openLb(' + p.gi + ',' + p.pi + ')"><img src="' + p.src + '" style="height:8cm;width:auto;max-width:12cm;object-fit:cover;border-radius:6px;border:1px solid #ddd;"></div>'; }).join('') + '</div>'; }
+        return '<div style="border:1px solid #ddd;border-left:4px solid #27AE60;border-radius:8px;padding:14px;margin-bottom:14px;page-break-inside:avoid;"><div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:4px;margin-bottom:6px;"><div><span style="font-size:15px;font-weight:700;">' + (i + 1) + '. ' + esc(d.name) + '</span><div style="font-size:12px;color:#888;margin-top:3px;">' + esc(d.type) + (d.qty ? ' ・ ' + esc(d.qty) : '') + (d.vendor ? ' ・ ' + esc(d.vendor) : '') + ' ・ ' + d.createdAt + '</div></div><span style="background:' + rb + ';color:' + rc + ';padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;">' + mResLabel(d.result) + '</span></div>' + (d.desc ? '<div style="font-size:13px;color:#555;margin:6px 0;">備註：' + esc(d.desc) + '</div>' : '') + ph + '</div>';
+      }).join('');
+      var lbs = '<script>\nvar _g=' + JSON.stringify(ag) + ';\nvar _gi=0,_pi=0;\nfunction openLb(g,p){_gi=g;_pi=p;document.getElementById("_img").src=_g[g][p];document.getElementById("_c").textContent=(p+1)+" / "+_g[g].length;document.getElementById("_lb").style.display="flex";}\nfunction _cl(){document.getElementById("_lb").style.display="none";}\nfunction _nv(d){_pi=(_pi+d+_g[_gi].length)%_g[_gi].length;document.getElementById("_img").src=_g[_gi][_pi];document.getElementById("_c").textContent=(_pi+1)+" / "+_g[_gi].length;}\ndocument.addEventListener("keydown",function(e){if(document.getElementById("_lb").style.display!=="flex")return;if(e.key==="Escape")_cl();if(e.key==="ArrowLeft")_nv(-1);if(e.key==="ArrowRight")_nv(1);});\n<\/script>';
+      var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + esc(proj) + '</title><style>@page{size:A4;margin:15mm}body{font-family:sans-serif;padding:20px;font-size:13px;max-width:900px;margin:0 auto}@media print{body{padding:0}#_lb{display:none!important}}#_lb{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:999;flex-direction:column;align-items:center;justify-content:center;}#_img{max-width:94vw;max-height:80vh;object-fit:contain;border-radius:6px;cursor:pointer;}._lbc{position:absolute;top:14px;right:18px;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;}._lbn{display:flex;gap:24px;margin-top:12px;}._lbn button{background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:24px;padding:8px 18px;border-radius:8px;cursor:pointer;}#_c{color:#ccc;font-size:12px;margin-top:8px;}</style></head><body><div id="_lb"><button class="_lbc" onclick="_cl()">×</button><img id="_img" src="" onclick="_nv(1)"><div class="_lbn"><button onclick="_nv(-1)">‹</button><button onclick="_nv(1)">›</button></div><div id="_c"></div></div><div style="border-bottom:3px solid #27AE60;padding-bottom:10px;margin-bottom:14px;"><h1 style="font-size:20px;color:#27AE60;margin-bottom:4px;">' + esc(proj) + '</h1><p style="color:#888;font-size:12px;">工地主任：' + esc(mgr) + '　匯出日期：' + todayStr() + '</p></div><div style="display:flex;gap:10px;margin-bottom:16px;"><div style="flex:1;padding:10px;text-align:center;background:#f5f5f5;border-radius:8px;border:1px solid #ddd;"><div style="font-size:22px;font-weight:700;">' + list.length + '</div><div style="font-size:11px;color:#666;">共計</div></div><div style="flex:1;padding:10px;text-align:center;background:#EAF5EA;border-radius:8px;border:1px solid #A9DFBF;"><div style="font-size:22px;font-weight:700;color:#27AE60;">' + ac + '</div><div style="font-size:11px;color:#666;">合格</div></div><div style="flex:1;padding:10px;text-align:center;background:#FDECEA;border-radius:8px;border:1px solid #F1948A;"><div style="font-size:22px;font-weight:700;color:#C0392B;">' + rj + '</div><div style="font-size:11px;color:#666;">退料</div></div></div>' + body + lbs + '</body></html>';
+      dlBlob(new Blob([html], { type: 'text/html;charset=utf-8' }), '驗收報告_' + todayStr().replace(/\//g, '') + '.html'); toast('✅ HTML 報告已下載');
+    });
+
+    document.getElementById('m-csv').addEventListener('click', function () {
+      var list = getMExp(); if (!list.length) { toast('⚠️ 沒有符合條件的記錄'); return; }
+      var rows = [['編號', '材料名稱', '類型', '數量規格', '廠商', '結果', '備註', '日期', '照片數']];
+      list.forEach(function (d, i) { rows.push([i + 1, d.name, d.type, d.qty || '', d.vendor || '', mResLabel(d.result).replace(/[^\u4e00-\u9fff\w]/g, ''), d.desc || '', d.createdAt, (d.photos || []).length]); });
+      var csv = '\uFEFF' + rows.map(function (r) { return r.map(function (c) { return '"' + String(c || '').replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+      dlBlob(new Blob([csv], { type: 'text/csv;charset=utf-8' }), '驗收報告_' + todayStr().replace(/\//g, '') + '.csv'); toast('✅ CSV 已下載');
     });
 
 
     // ══════════════════════════════
     // 工程進度
     // ══════════════════════════════
-    function switchPTab(t) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    function switchPTab(t, skipScroll) {
+      if (!skipScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
       ['list', 'add'].forEach(function (n) { document.getElementById('pt-' + n + '-btn').className = 'tab' + (t === n ? ' tp' : ''); document.getElementById('pt-' + n).style.display = t === n ? 'block' : 'none'; });
       if (t === 'list') renderPList();
-      if (t === 'add') {
-        document.getElementById('p-prog').addEventListener('input', function () {
-          document.getElementById('p-prog-val').textContent = this.value;
-        });
-      }
     }
     document.getElementById('pt-add-btn').addEventListener('click', function () { switchPTab('add'); });
     document.getElementById('pt-list-btn').addEventListener('click', function () { switchPTab('list'); });
@@ -2350,7 +2648,9 @@
             if (data.dTypes) { dTypes = data.dTypes; saveDT(); }
             if (data.sTypes) { sTypes = data.sTypes; saveST(); }
             if (data.mTypes) { mTypes = data.mTypes; saveMT(); }
-            saveD(); saveS(); saveM(); saveP(); renderDList(); toast('✅ 備份已還原');
+            saveD(); saveS(); saveM(); saveP();
+            renderDList(); renderSList(); renderMList(); renderPList();
+            toast('✅ 備份已還原');
           });
         } catch (e) { toast('⚠️ 讀取備份失敗'); }
       }; r.readAsText(f); this.value = '';
@@ -2393,6 +2693,24 @@
     // 初始化
     // ══════════════════════════════
     renderWeek();
+
+    // 工程進度滑桿監聽（僅綁一次）
+    document.getElementById('p-prog').addEventListener('input', function () {
+      document.getElementById('p-prog-val').textContent = this.value;
+    });
+
+    // 工地資訊持久化
+    var savedProjName = localStorage.getItem('projName') || '';
+    var savedProjMgr = localStorage.getItem('projMgr') || '';
+    if (savedProjName) { document.getElementById('proj-name').value = savedProjName; document.getElementById('proj-display').textContent = savedProjName; }
+    if (savedProjMgr) document.getElementById('proj-mgr').value = savedProjMgr;
+    document.getElementById('proj-name').addEventListener('input', function () {
+      document.getElementById('proj-display').textContent = this.value || '工地管理';
+      localStorage.setItem('projName', this.value);
+    });
+    document.getElementById('proj-mgr').addEventListener('input', function () {
+      localStorage.setItem('projMgr', this.value);
+    });
 
     rebuildDFT(); rebuildSFT(); rebuildMFT(); updateDExp(); syncMRes(); syncSRes();
     switchMod('defect');
