@@ -1493,7 +1493,8 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.2.0 (高效能重構版) 
+      v2.2.1 (離線強化版) 
+      <span id="offline-tag" style="display:none; background:#854F0B; color:#fff; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">離線模式</span>
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[
         重新載入 ]</span>
     </div>
@@ -3032,6 +3033,15 @@
     switchMod('defect');
 
     // 自動讀取備份功能已移除，讓系統預設保持空白。
+
+    // 離線狀態偵測
+    function updateOnlineStatus() {
+      var tag = document.getElementById('offline-tag');
+      if (tag) tag.style.display = navigator.onLine ? 'none' : 'inline-block';
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
