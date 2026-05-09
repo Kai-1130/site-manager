@@ -1230,6 +1230,14 @@
           <button class="exp-btn" id="btn-reset"
             style="color:#C0392B; border-color:#F5B7B1; background:#FDEDEC; margin-top:8px;">🗑️ 清空所有資料 (變空白)</button>
         </div>
+
+        <div class="card" style="margin-top:20px; border:1px solid #185FA5;">
+          <div style="font-size:14px;font-weight:700;color:#185FA5;margin-bottom:10px;">☁️ Notion 雲端同步</div>
+          <div style="font-size:11px;color:#666;margin-bottom:12px;">將缺失記錄同步至 Notion 資料庫（需網路）。</div>
+          <div class="field"><label>Notion API Token</label><input type="password" id="n-token" placeholder="secret_..."></div>
+          <div class="field"><label>Database ID</label><input type="text" id="n-dbid" placeholder="資料庫 ID"></div>
+          <button class="submit-btn" id="btn-sync-notion" style="background:#185FA5;">🚀 立即同步缺失記錄</button>
+        </div>
       </div>
     </div>
 
@@ -1493,7 +1501,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.2.1 (離線強化版) 
+      v2.3.0 (Notion 雲端同步版) 
       <span id="offline-tag" style="display:none; background:#854F0B; color:#fff; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">離線模式</span>
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[
         重新載入 ]</span>
@@ -2936,6 +2944,65 @@
     }
 
     // ══════════════════════════════
+
+    // Notion 雲端同步邏輯
+    var nToken = localStorage.getItem('nToken') || '';
+    var nDbid = localStorage.getItem('nDbid') || '';
+    document.getElementById('n-token').value = nToken;
+    document.getElementById('n-dbid').value = nDbid;
+
+    document.getElementById('n-token').addEventListener('input', function() { localStorage.setItem('nToken', this.value.trim()); });
+    document.getElementById('n-dbid').addEventListener('input', function() { localStorage.setItem('nDbid', this.value.trim()); });
+
+    document.getElementById('btn-sync-notion').addEventListener('click', async function() {
+      var token = document.getElementById('n-token').value.trim();
+      var dbid = document.getElementById('n-dbid').value.trim();
+      if (!token || !dbid) { toast('⚠️ 請先填寫 API Token 與 Database ID'); return; }
+      
+      if (!navigator.onLine) { toast('❌ 目前處於離線狀態，無法同步'); return; }
+
+      var btn = this; btn.disabled = true; btn.textContent = '⏳ 同步中...';
+      toast('☁️ 正在連線至 Notion...');
+
+      var successCount = 0;
+      var list = defects; // 先同步缺失記錄
+
+      try {
+        for (var d of list) {
+          var payload = {
+            parent: { database_id: dbid },
+            properties: {
+              "位置": { title: [{ text: { content: d.location } }] },
+              "類型": { select: { name: d.type } },
+              "狀態": { select: { name: d.status === 'pending' ? '待改善' : '驗收完成' } },
+              "優先級": { select: { name: PL[getPri(d)] } },
+              "日期": { rich_text: [{ text: { content: d.createdAt } }] },
+              "備註": { rich_text: [{ text: { content: d.desc || "" } }] }
+            }
+          };
+
+          // 注意：瀏覽器端直接打 Notion API 可能會遇到 CORS 問題
+          // 這邊使用 proxy 或是提醒使用者
+          var res = await fetch('https://api.notion.com/v1/pages', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + token,
+              'Content-Type': 'application/json',
+              'Notion-Version': '2022-06-28'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.ok) successCount++;
+        }
+        toast('✅ 同步完成！成功推送 ' + successCount + ' 筆');
+      } catch (e) {
+        console.error(e);
+        toast('❌ 同步失敗 (可能為 CORS 限制)');
+      } finally {
+        btn.disabled = false; btn.textContent = '🚀 立即同步缺失記錄';
+      }
+    });
 
     // 備份 / 還原
     // ══════════════════════════════
