@@ -1467,7 +1467,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.0.5 (極速穩定版) 
+      v2.0.7 (完全修復版) 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 重新載入 ]</span>
     </div>
   </div>
@@ -1831,6 +1831,28 @@
       var v = document.getElementById('d-chip-inp').value.trim(); if (!v) return;
       if (!dTypes.includes(v)) { dTypes.push(v); saveDT(); }
       dType = v; document.getElementById('d-chip-inp').value = ''; renderDChips(); rebuildDFT();
+    });
+
+    function rebuildDFT() {
+      var s = document.getElementById('d-ft'), c = s.value;
+      s.innerHTML = '<option value="">全部類型</option>' + dTypes.map(function (t) { return '<option value="' + t + '"' + (c === t ? ' selected' : '') + '>' + t + '</option>'; }).join('');
+    }
+
+    function syncDPri() {
+      document.querySelectorAll('#d-pri .pri-tag').forEach(function (el) {
+        var p = el.getAttribute('data-p');
+        el.className = 'pri-tag' + (dPri === p ? ' sel-' + p : '');
+      });
+    }
+    document.querySelectorAll('#d-pri .pri-tag').forEach(function (el) {
+      el.addEventListener('click', function () { dPri = this.getAttribute('data-p'); syncDPri(); });
+    });
+
+    document.getElementById('d-ph-btn').addEventListener('click', function () { document.getElementById('d-file').click(); });
+    document.getElementById('d-file').addEventListener('change', function () {
+      var txt = (document.getElementById('d-loc').value.trim() + '\n' + document.getElementById('d-desc').value.trim()).trim();
+      addFiles(this.files, dPh, 'd-preview', txt);
+      this.value = '';
     });
 
     document.getElementById('d-submit').addEventListener('click', function () {
@@ -2428,6 +2450,13 @@
 
     function mResLabel(r) { return r === 'accept' ? '✅ 合格' : r === 'partial' ? '⚠️ 部分合格' : '❌ 退料'; }
     function mResBadge(r) { return r === 'accept' ? 'bpass' : r === 'partial' ? 'bpart' : 'bfail'; }
+
+    document.getElementById('m-ph-btn').addEventListener('click', function () { document.getElementById('m-file').click(); });
+    document.getElementById('m-file').addEventListener('change', function () {
+      var txt = (document.getElementById('m-name').value.trim() + '\n' + document.getElementById('m-desc').value.trim()).trim();
+      addFiles(this.files, mPh, 'm-preview', txt);
+      this.value = '';
+    });
 
     document.getElementById('m-submit').addEventListener('click', function () {
       var btn = this;
