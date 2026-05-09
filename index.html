@@ -1493,7 +1493,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.1.6 (靜音穩定版) 
+      v2.2.0 (高效能重構版) 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[
         重新載入 ]</span>
     </div>
@@ -1952,9 +1952,22 @@
         if (d.desc) { var dm = document.createElement('div'); dm.style.cssText = 'font-size:13px;color:#666;margin:5px 0 8px;'; dm.textContent = d.desc; card.appendChild(dm); }
 
         var photos = d.photos || [];
-        if (photos.length) { var l1 = mkPhlbl('現況照片', '#555'); card.appendChild(l1); card.appendChild(mkPhRow(photos, isEd, d.id, 'photos', 'd')); }
         var fixPhotos = d.fixPhotos || [];
-        if (fixPhotos.length) { var l2 = mkPhlbl('改善後照片', '#3B6D11'); card.appendChild(l2); card.appendChild(mkPhRow(fixPhotos, isEd, d.id, 'fixPhotos', 'd')); }
+        if (photos.length || fixPhotos.length) {
+          var vBtn = document.createElement('button'); vBtn.className = 'abtn'; vBtn.style.color = '#185FA5'; vBtn.style.fontWeight = '700';
+          vBtn.textContent = '📷 查看照片 (' + (photos.length + fixPhotos.length) + ')';
+          var phArea = document.createElement('div'); phArea.style.display = 'none';
+          vBtn.addEventListener('click', function() {
+            if (phArea.style.display === 'none') {
+              phArea.style.display = 'block'; vBtn.textContent = '收起照片';
+              if (phArea.innerHTML === '') {
+                if (photos.length) { phArea.appendChild(mkPhlbl('現況照片', '#555')); phArea.appendChild(mkPhRow(photos, isEd, d.id, 'photos', 'd')); }
+                if (fixPhotos.length) { phArea.appendChild(mkPhlbl('改善後照片', '#3B6D11')); phArea.appendChild(mkPhRow(fixPhotos, isEd, d.id, 'fixPhotos', 'd')); }
+              }
+            } else { phArea.style.display = 'none'; vBtn.textContent = '📷 查看照片 (' + (photos.length + fixPhotos.length) + ')'; }
+          });
+          card.appendChild(vBtn); card.appendChild(phArea);
+        }
 
         // ── 編輯面板（修復版）──
         if (isEd) {
@@ -2293,9 +2306,21 @@
         hdr.appendChild(left); hdr.appendChild(bdg); card.appendChild(hdr);
         if (d.desc) { var dm = document.createElement('div'); dm.style.cssText = 'font-size:13px;color:#666;margin:5px 0 8px;'; dm.textContent = d.desc; card.appendChild(dm); }
 
-        if ((d.photos || []).length) {
-          card.appendChild(mkPhlbl('巡檢照片', '#E67E22'));
-          card.appendChild(mkPhRow(d.photos, isEd, d.id, 'photos', 's'));
+        var sPhotos = d.photos || [];
+        if (sPhotos.length) {
+          var sVBtn = document.createElement('button'); sVBtn.className = 'abtn'; sVBtn.style.color = '#E67E22'; sVBtn.style.fontWeight = '700';
+          sVBtn.textContent = '📷 查看照片 (' + sPhotos.length + ')';
+          var sPhArea = document.createElement('div'); sPhArea.style.display = 'none';
+          sVBtn.addEventListener('click', function() {
+            if (sPhArea.style.display === 'none') {
+              sPhArea.style.display = 'block'; sVBtn.textContent = '收起照片';
+              if (sPhArea.innerHTML === '') {
+                sPhArea.appendChild(mkPhlbl('巡檢照片', '#E67E22'));
+                sPhArea.appendChild(mkPhRow(sPhotos, isEd, d.id, 'photos', 's'));
+              }
+            } else { sPhArea.style.display = 'none'; sVBtn.textContent = '📷 查看照片 (' + sPhotos.length + ')'; }
+          });
+          card.appendChild(sVBtn); card.appendChild(sPhArea);
         }
 
         if (isEd) {
@@ -2539,9 +2564,21 @@
         hdr.appendChild(left); hdr.appendChild(bdg); card.appendChild(hdr);
         if (d.desc) { var dm = document.createElement('div'); dm.style.cssText = 'font-size:13px;color:#666;margin:5px 0 8px;'; dm.textContent = d.desc; card.appendChild(dm); }
 
-        if ((d.photos || []).length) {
-          card.appendChild(mkPhlbl('驗收照片', '#27AE60'));
-          card.appendChild(mkPhRow(d.photos, isEd, d.id, 'photos', 'm'));
+        var mPhotos = d.photos || [];
+        if (mPhotos.length) {
+          var mVBtn = document.createElement('button'); mVBtn.className = 'abtn'; mVBtn.style.color = '#27AE60'; mVBtn.style.fontWeight = '700';
+          mVBtn.textContent = '📷 查看照片 (' + mPhotos.length + ')';
+          var mPhArea = document.createElement('div'); mPhArea.style.display = 'none';
+          mVBtn.addEventListener('click', function() {
+            if (mPhArea.style.display === 'none') {
+              mPhArea.style.display = 'block'; mVBtn.textContent = '收起照片';
+              if (mPhArea.innerHTML === '') {
+                mPhArea.appendChild(mkPhlbl('驗收照片', '#27AE60'));
+                mPhArea.appendChild(mkPhRow(mPhotos, isEd, d.id, 'photos', 'm'));
+              }
+            } else { mPhArea.style.display = 'none'; mVBtn.textContent = '📷 查看照片 (' + mPhotos.length + ')'; }
+          });
+          card.appendChild(mVBtn); card.appendChild(mPhArea);
         }
 
         if (isEd) {
