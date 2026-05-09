@@ -1467,7 +1467,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.0.7 (完全修復版) 
+      v2.0.8 (資料防彈版) 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 重新載入 ]</span>
     </div>
   </div>
@@ -1870,14 +1870,14 @@
         dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); 
         
         toast('✅ 記錄已成功新增');
+        
+        // 核心修正：先完成寫入，再進行 UI 反饋
+        saveD(); 
+        
         switchDTab('list');
         btn.disabled = false;
         btn.textContent = '新增缺失記錄';
-        
-        setTimeout(function() {
-          saveD();
-          window.scrollTo(0,0);
-        }, 100);
+        window.scrollTo(0,0);
       } catch (e) {
         btn.disabled = false;
         btn.textContent = '新增缺失記錄';
@@ -2224,18 +2224,17 @@
 
       safetyLogs.unshift({ id: Date.now(), location: loc, type: sType, desc: document.getElementById('s-desc').value.trim(), photos: sPh.slice(), result: sRes, createdAt: todayStr() });
       
-      setTimeout(function() {
-        saveS(); 
-        sPh.length = 0; document.getElementById('s-preview').innerHTML = '';
-        document.getElementById('s-loc').value = ''; document.getElementById('s-desc').value = ''; document.getElementById('s-file').value = '';
-        sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes(); 
-        
-        toast('✅ 巡檢記錄已儲存');
-        switchSTab('list');
-        btn.disabled = false;
-        btn.textContent = '新增巡檢記錄';
-        setTimeout(function() { window.scrollTo(0,0); }, 100);
-      }, 400);
+      // 核心修正：同步執行存檔，確保滑掉 App 前已完成寫入
+      saveS(); 
+      sPh.length = 0; document.getElementById('s-preview').innerHTML = '';
+      document.getElementById('s-loc').value = ''; document.getElementById('s-desc').value = ''; document.getElementById('s-file').value = '';
+      sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes(); 
+      
+      toast('✅ 巡檢記錄已儲存');
+      switchSTab('list');
+      btn.disabled = false;
+      btn.textContent = '新增巡檢記錄';
+      window.scrollTo(0,0);
     });
 
     document.getElementById('s-fr').addEventListener('change', renderSList);
@@ -2468,18 +2467,17 @@
 
       matLogs.unshift({ id: Date.now(), name: name, type: mType, qty: document.getElementById('m-qty').value.trim(), vendor: document.getElementById('m-vendor').value.trim(), desc: document.getElementById('m-desc').value.trim(), photos: mPh.slice(), result: mRes, createdAt: todayStr() });
       
-      setTimeout(function() {
-        saveM(); 
-        mPh.length = 0; document.getElementById('m-preview').innerHTML = '';
-        document.getElementById('m-name').value = ''; document.getElementById('m-qty').value = ''; document.getElementById('m-vendor').value = ''; document.getElementById('m-desc').value = ''; document.getElementById('m-file').value = '';
-        mType = mTypes[0] || ''; mRes = 'accept'; renderMChips(); syncMRes(); 
-        
-        toast('✅ 驗收記錄已儲存');
-        switchMTab('list');
-        btn.disabled = false;
-        btn.textContent = '新增驗收記錄';
-        setTimeout(function() { window.scrollTo(0,0); }, 100);
-      }, 400);
+      // 核心修正：同步執行存檔
+      saveM(); 
+      mPh.length = 0; document.getElementById('m-preview').innerHTML = '';
+      document.getElementById('m-name').value = ''; document.getElementById('m-qty').value = ''; document.getElementById('m-vendor').value = ''; document.getElementById('m-desc').value = ''; document.getElementById('m-file').value = '';
+      mType = mTypes[0] || ''; mRes = 'accept'; renderMChips(); syncMRes(); 
+      
+      toast('✅ 驗收記錄已儲存');
+      switchMTab('list');
+      btn.disabled = false;
+      btn.textContent = '新增驗收記錄';
+      window.scrollTo(0,0);
     });
 
     document.getElementById('m-fr').addEventListener('change', renderMList);

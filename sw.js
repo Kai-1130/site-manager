@@ -1,4 +1,4 @@
-const CACHE_NAME = 'site-manager-cache-v2.0.7';
+const CACHE_NAME = 'site-manager-cache-v2.0.8';
 const urlsToCache = [
   './',
   './工地管理.html',
