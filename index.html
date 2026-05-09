@@ -1008,7 +1008,7 @@
       transition: opacity 0.3s;
       pointer-events: none;
       white-space: nowrap;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     }
 
     .toast.show {
@@ -1020,7 +1020,18 @@
     }
 
     /* iOS PWA 點擊延遲修復 */
-    button, .tab, .module-btn, .chip, .pri-tag, label, .ep-save, .ep-add-ph, .submit-btn, .exp-btn, .abtn, .day-cell {
+    button,
+    .tab,
+    .module-btn,
+    .chip,
+    .pri-tag,
+    label,
+    .ep-save,
+    .ep-add-ph,
+    .submit-btn,
+    .exp-btn,
+    .abtn,
+    .day-cell {
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
       transition: transform 0.1s, opacity 0.1s;
@@ -1032,9 +1043,13 @@
       transform: scale(0.92) !important;
       filter: brightness(0.8) !important;
     }
+
     #loading-mask {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: #fff;
       display: flex;
       flex-direction: column;
@@ -1043,14 +1058,25 @@
       z-index: 10000;
       transition: opacity 0.5s;
     }
+
     .spinner {
-      width: 40px; height: 40px;
+      width: 40px;
+      height: 40px;
       border: 4px solid #f3f3f3;
       border-top: 4px solid #185FA5;
       border-radius: 50%;
       animation: spin 1s linear infinite;
     }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+
+      100% {
+        transform: rotate(360deg);
+      }
+    }
   </style>
 </head>
 
@@ -1467,8 +1493,9 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.0.9 (大數據存儲版) 
-      <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 重新載入 ]</span>
+      v2.0.9 (大數據存儲版)
+      <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[
+        重新載入 ]</span>
     </div>
   </div>
 
@@ -1494,7 +1521,7 @@
     var db;
     var defects = [], safetyLogs = [], matLogs = [], progLogs = [];
     var dTypes = [], sTypes = [], mTypes = [];
-    
+
     function initIDB() {
       // 安全退場保險：3秒後強制移除遮罩
       setTimeout(hideLoading, 3000);
@@ -1510,7 +1537,7 @@
           db = e.target.result;
           checkIDBRecovery();
         };
-        req.onerror = function() { loadLocalData(); hideLoading(); };
+        req.onerror = function () { loadLocalData(); hideLoading(); };
       } catch (e) { loadLocalData(); hideLoading(); }
     }
 
@@ -1528,11 +1555,11 @@
 
     function hideLoading() {
       var m = document.getElementById('loading-mask');
-      if (m && m.style.display !== 'none') { 
-        m.style.opacity = '0'; 
-        setTimeout(function(){ 
-          if(m && m.parentNode) m.parentNode.removeChild(m); 
-        }, 600); 
+      if (m && m.style.display !== 'none') {
+        m.style.opacity = '0';
+        setTimeout(function () {
+          if (m && m.parentNode) m.parentNode.removeChild(m);
+        }, 600);
       }
     }
 
@@ -1540,7 +1567,7 @@
       loadLocalData();
       var hasLocal = (defects.length > 0 || safetyLogs.length > 0 || matLogs.length > 0 || progLogs.length > 0);
       if (hasLocal) { syncIDB(); return; }
-      
+
       try {
         var tx = db.transaction("backup", "readonly");
         var req = tx.objectStore("backup").get("main_data");
@@ -1572,9 +1599,9 @@
         tx.objectStore("backup").put({ id: "main_data", defects: defects, safetyLogs: safetyLogs, matLogs: matLogs, progLogs: progLogs, dTypes: dTypes, sTypes: sTypes, mTypes: mTypes, ts: Date.now() });
       } catch (e) { }
     }
-    
+
     // 資料心跳監聽：防止 iOS 意外清空 localStorage
-    setInterval(function() {
+    setInterval(function () {
       if (!db) return;
       var currentLocal = (localStorage.getItem('defects') || '[]').length;
       // 只有當記憶體中有資料，但 localStorage 被清空時才補回
@@ -1582,52 +1609,52 @@
         saveD(); saveS(); saveM(); saveP();
       }
     }, 15000);
-    
+
     // 立即啟動初始化
     initIDB();
 
     // ══ 工具 ══
     function blurAll() { if (document.activeElement && typeof document.activeElement.blur === 'function') document.activeElement.blur(); }
-    
+
     // JavaScript 觸感回饋核心
     function bindTactile() {
       var els = document.querySelectorAll('button, .tab, .module-btn, .chip, .abtn, .day-cell, .ep-save, .submit-btn');
-      els.forEach(function(el) {
+      els.forEach(function (el) {
         if (el._tactile) return;
         el._tactile = true;
-        var start = function() { el.classList.add('active-press'); };
-        var end = function() { el.classList.remove('active-press'); };
-        el.addEventListener('touchstart', start, {passive: true});
-        el.addEventListener('touchend', end, {passive: true});
-        el.addEventListener('touchcancel', end, {passive: true});
+        var start = function () { el.classList.add('active-press'); };
+        var end = function () { el.classList.remove('active-press'); };
+        el.addEventListener('touchstart', start, { passive: true });
+        el.addEventListener('touchend', end, { passive: true });
+        el.addEventListener('touchcancel', end, { passive: true });
         el.addEventListener('mousedown', start);
         el.addEventListener('mouseup', end);
         el.addEventListener('mouseleave', end);
       });
     }
     // 監控 DOM 變化自動綁定回饋
-    new MutationObserver(bindTactile).observe(document.body, {childList: true, subtree: true});
+    new MutationObserver(bindTactile).observe(document.body, { childList: true, subtree: true });
 
     // iOS Safari/WebKit reflow 強制觸發重繪
-    function forceRepaint(el) { 
+    function forceRepaint(el) {
       if (!el) return;
       void el.offsetHeight;
       // 雙重重繪：切換一個不會影響視覺的屬性
       el.style.zIndex = el.style.zIndex === '1' ? '0' : '1';
     }
-    function scrollToTop() { 
+    function scrollToTop() {
       blurAll();
       // iOS 需要等待鍵盤縮回 + 版面重繪後才能滿動
-      setTimeout(function() { 
+      setTimeout(function () {
         window.scrollTo(0, 0);
         document.body.scrollTop = 0;
         document.documentElement.scrollTop = 0;
         // 雙重保險：透過 rAF 等待下一幀再執行一次
-        requestAnimationFrame(function() { 
-          window.scrollTo(0, 0); 
+        requestAnimationFrame(function () {
+          window.scrollTo(0, 0);
           document.body.scrollTop = 0;
         });
-      }, 200); 
+      }, 200);
     }
 
     // 所有類型都存在 customTypes，預設類型也一樣，差別只是刪除後回到第一個
@@ -1655,10 +1682,10 @@
     function getPri(d) { var p = d && d.priority; return (p && PL[p]) ? p : 'normal'; }
     function todayStr() { var d = new Date(); return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + ('0' + d.getDate()).slice(-2); }
     function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-    function saveD() { 
+    function saveD() {
       try {
-        localStorage.setItem('defects', JSON.stringify(defects)); 
-        syncIDB(); 
+        localStorage.setItem('defects', JSON.stringify(defects));
+        syncIDB();
       } catch (e) {
         if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
           toast('⚠️ 空間不足！請刪除舊資料或減少照片');
@@ -1667,16 +1694,16 @@
         }
       }
     }
-    function saveS() { 
+    function saveS() {
       try {
-        localStorage.setItem('safetyLogs', JSON.stringify(safetyLogs)); 
-        syncIDB(); 
+        localStorage.setItem('safetyLogs', JSON.stringify(safetyLogs));
+        syncIDB();
       } catch (e) { toast('❌ 工安存檔失敗'); }
     }
-    function saveM() { 
+    function saveM() {
       try {
-        localStorage.setItem('matLogs', JSON.stringify(matLogs)); 
-        syncIDB(); 
+        localStorage.setItem('matLogs', JSON.stringify(matLogs));
+        syncIDB();
       } catch (e) { toast('❌ 材料存檔失敗'); }
     }
     function saveP() { localStorage.setItem('progLogs', JSON.stringify(progLogs)); syncIDB(); }
@@ -1730,7 +1757,7 @@
 
     // 將 stamp 封裝為 Promise 以利同步控制
     function stampAsync(src, text) {
-      return new Promise(function(resolve) {
+      return new Promise(function (resolve) {
         stamp(src, text, resolve);
       });
     }
@@ -1757,15 +1784,15 @@
     function addFiles(files, targetArr, previewId, watermarkText) {
       if (!files.length) return;
       toast('📸 照片處理中...');
-      var promises = Array.from(files).map(function(f) {
-        return new Promise(function(resolve) {
+      var promises = Array.from(files).map(function (f) {
+        return new Promise(function (resolve) {
           var r = new FileReader();
-          r.onload = function(e) { resolve(stampAsync(e.target.result, watermarkText)); };
+          r.onload = function (e) { resolve(stampAsync(e.target.result, watermarkText)); };
           r.readAsDataURL(f);
         });
       });
-      Promise.all(promises).then(function(results) {
-        results.forEach(function(s) { targetArr.push(s); });
+      Promise.all(promises).then(function (results) {
+        results.forEach(function (s) { targetArr.push(s); });
         if (previewId) renderPreview(targetArr, previewId);
         toast('✅ 照片處理完成');
       });
@@ -1879,33 +1906,33 @@
     document.getElementById('d-submit').addEventListener('click', function () {
       var btn = this;
       var loc = document.getElementById('d-loc').value.trim(); if (!loc) { toast('⚠️ 請填寫缺失位置'); return; }
-      
+
       btn.disabled = true;
       btn.textContent = '儲存中...';
-      
+
       try {
         defects.unshift({ id: Date.now(), location: loc, type: dType, priority: dPri, desc: document.getElementById('d-desc').value.trim(), photos: dPh.slice(), fixPhotos: [], status: 'pending', createdAt: todayStr() });
-        dPh.length = 0; 
-        var p = document.getElementById('d-preview'); if(p) p.innerHTML = '';
+        dPh.length = 0;
+        var p = document.getElementById('d-preview'); if (p) p.innerHTML = '';
         document.getElementById('d-loc').value = ''; document.getElementById('d-desc').value = ''; document.getElementById('d-file').value = '';
-        dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri(); 
-        
+        dType = dTypes[0] || ''; dPri = 'urgent'; renderDChips(); syncDPri();
+
         toast('✅ 記錄已成功新增');
-        
+
         // 核心修正：先完成寫入，再進行 UI 反饋
-        saveD(); 
-        
+        saveD();
+
         switchDTab('list');
         btn.disabled = false;
         btn.textContent = '新增缺失記錄';
-        window.scrollTo(0,0);
+        window.scrollTo(0, 0);
       } catch (e) {
         btn.disabled = false;
         btn.textContent = '新增缺失記錄';
         toast('❌ 儲存發生錯誤');
       }
     });
-    
+
     document.getElementById('d-fs').addEventListener('change', renderDList);
     document.getElementById('d-fp').addEventListener('change', renderDList);
     document.getElementById('d-ft').addEventListener('change', renderDList);
@@ -2019,16 +2046,16 @@
                 var r = new FileReader(); r.onload = function (e) {
                   stamp(e.target.result, txt, function (s) {
                     defects = defects.map(function (x) { if (x.id !== id) return x; var c = Object.assign({}, x); c.photos = (c.photos || []).concat([s]); return c; });
-                    count++; if (count === files.length) { 
-                      saveD(); toast('✅ 照片已新增'); 
+                    count++; if (count === files.length) {
+                      saveD(); toast('✅ 照片已新增');
                       // v1.6.4 錄影診斷優化：完全不重繪列表，直接更新 DOM
                       var phArea = ep.querySelector('.ph-row');
                       if (phArea) {
-                         var newImg = document.createElement('img'); newImg.src = s; newImg.className = 'ph-img';
-                         newImg.addEventListener('click', function() { openLbD(id, (defects.find(function(x){return x.id===id})||{}).photos.length - 1); });
-                         phArea.appendChild(newImg);
+                        var newImg = document.createElement('img'); newImg.src = s; newImg.className = 'ph-img';
+                        newImg.addEventListener('click', function () { openLbD(id, (defects.find(function (x) { return x.id === id }) || {}).photos.length - 1); });
+                        phArea.appendChild(newImg);
                       } else {
-                         setTimeout(renderDList, 50); // 若找不到區域才重繪
+                        setTimeout(renderDList, 50); // 若找不到區域才重繪
                       }
                     }
                   });
@@ -2238,24 +2265,24 @@
     document.getElementById('s-submit').addEventListener('click', function () {
       var btn = this;
       var loc = document.getElementById('s-loc').value.trim(); if (!loc) { toast('⚠️ 請填寫巡檢地點'); return; }
-      
+
       btn.disabled = true;
       btn.textContent = '處理中...';
       toast('💾 正在儲存...');
 
       safetyLogs.unshift({ id: Date.now(), location: loc, type: sType, desc: document.getElementById('s-desc').value.trim(), photos: sPh.slice(), result: sRes, createdAt: todayStr() });
-      
+
       // 核心修正：同步執行存檔，確保滑掉 App 前已完成寫入
-      saveS(); 
+      saveS();
       sPh.length = 0; document.getElementById('s-preview').innerHTML = '';
       document.getElementById('s-loc').value = ''; document.getElementById('s-desc').value = ''; document.getElementById('s-file').value = '';
-      sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes(); 
-      
+      sType = sTypes[0] || ''; sRes = 'pass'; renderSChips(); syncSRes();
+
       toast('✅ 巡檢記錄已儲存');
       switchSTab('list');
       btn.disabled = false;
       btn.textContent = '新增巡檢記錄';
-      window.scrollTo(0,0);
+      window.scrollTo(0, 0);
     });
 
     document.getElementById('s-fr').addEventListener('change', renderSList);
@@ -2481,24 +2508,24 @@
     document.getElementById('m-submit').addEventListener('click', function () {
       var btn = this;
       var name = document.getElementById('m-name').value.trim(); if (!name) { toast('⚠️ 請填寫材料名稱'); return; }
-      
+
       btn.disabled = true;
       btn.textContent = '處理中...';
       toast('💾 正在儲存...');
 
       matLogs.unshift({ id: Date.now(), name: name, type: mType, qty: document.getElementById('m-qty').value.trim(), vendor: document.getElementById('m-vendor').value.trim(), desc: document.getElementById('m-desc').value.trim(), photos: mPh.slice(), result: mRes, createdAt: todayStr() });
-      
+
       // 核心修正：同步執行存檔
-      saveM(); 
+      saveM();
       mPh.length = 0; document.getElementById('m-preview').innerHTML = '';
       document.getElementById('m-name').value = ''; document.getElementById('m-qty').value = ''; document.getElementById('m-vendor').value = ''; document.getElementById('m-desc').value = ''; document.getElementById('m-file').value = '';
-      mType = mTypes[0] || ''; mRes = 'accept'; renderMChips(); syncMRes(); 
-      
+      mType = mTypes[0] || ''; mRes = 'accept'; renderMChips(); syncMRes();
+
       toast('✅ 驗收記錄已儲存');
       switchMTab('list');
       btn.disabled = false;
       btn.textContent = '新增驗收記錄';
-      window.scrollTo(0,0);
+      window.scrollTo(0, 0);
     });
 
     document.getElementById('m-fr').addEventListener('change', renderMList);
@@ -2661,10 +2688,10 @@
     function switchPTab(t, skipScroll) {
       if (!skipScroll) blurAll();
       var target = null;
-      ['list', 'add'].forEach(function (n) { 
-        document.getElementById('pt-' + n + '-btn').className = 'tab' + (t === n ? ' tp' : ''); 
+      ['list', 'add'].forEach(function (n) {
+        document.getElementById('pt-' + n + '-btn').className = 'tab' + (t === n ? ' tp' : '');
         var sec = document.getElementById('pt-' + n);
-        sec.style.display = t === n ? 'block' : 'none'; 
+        sec.style.display = t === n ? 'block' : 'none';
         if (t === n) target = sec;
       });
       forceRepaint(target);
@@ -2979,7 +3006,7 @@
     // 重新載入按鈕邏輯（離線版不再強制清除 SW）
     document.getElementById('force-refresh').addEventListener('click', function () {
       toast('⛳ 重新載入中...');
-      setTimeout(function() {
+      setTimeout(function () {
         window.location.href = window.location.pathname + '?v=' + Date.now();
       }, 500);
     });
