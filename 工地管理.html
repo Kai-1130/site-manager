@@ -1493,7 +1493,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.1.5 (資料安全版) 
+      v2.1.6 (靜音穩定版) 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[
         重新載入 ]</span>
     </div>
@@ -1681,30 +1681,9 @@
     function getPri(d) { var p = d && d.priority; return (p && PL[p]) ? p : 'normal'; }
     function todayStr() { var d = new Date(); return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + ('0' + d.getDate()).slice(-2); }
     function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-    function saveD() {
-      try {
-        localStorage.setItem('defects', JSON.stringify(defects));
-        syncIDB();
-      } catch (e) {
-        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
-          toast('⚠️ 空間不足！請刪除舊資料或減少照片');
-        } else {
-          toast('❌ 存檔失敗');
-        }
-      }
-    }
-    function saveS() {
-      try {
-        localStorage.setItem('safetyLogs', JSON.stringify(safetyLogs));
-        syncIDB();
-      } catch (e) { toast('❌ 工安存檔失敗'); }
-    }
-    function saveM() {
-      try {
-        localStorage.setItem('matLogs', JSON.stringify(matLogs));
-        syncIDB();
-      } catch (e) { toast('❌ 材料存檔失敗'); }
-    }
+    function saveD() { try { localStorage.setItem('defects', JSON.stringify(defects)); } catch (e) {} syncIDB(); }
+    function saveS() { try { localStorage.setItem('safetyLogs', JSON.stringify(safetyLogs)); } catch (e) {} syncIDB(); }
+    function saveM() { try { localStorage.setItem('matLogs', JSON.stringify(matLogs)); } catch (e) {} syncIDB(); }
     function saveP() { localStorage.setItem('progLogs', JSON.stringify(progLogs)); syncIDB(); }
     function saveDT() { localStorage.setItem('dTypes', JSON.stringify(dTypes)); syncIDB(); }
     function saveST() { localStorage.setItem('sTypes', JSON.stringify(sTypes)); syncIDB(); }
