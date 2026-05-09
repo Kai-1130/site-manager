@@ -1576,14 +1576,13 @@
           if (d && (d.defects.length > 0 || d.safetyLogs.length > 0 || d.matLogs.length > 0 || d.progLogs.length > 0)) {
             defects = d.defects || []; safetyLogs = d.safetyLogs || []; matLogs = d.matLogs || []; progLogs = d.progLogs || [];
             if (d.dTypes) dTypes = d.dTypes; if (d.sTypes) sTypes = d.sTypes; if (d.mTypes) mTypes = d.mTypes;
-            localStorage.setItem('defects', JSON.stringify(defects));
-            localStorage.setItem('safetyLogs', JSON.stringify(safetyLogs));
-            localStorage.setItem('matLogs', JSON.stringify(matLogs));
-            localStorage.setItem('progLogs', JSON.stringify(progLogs));
+            
+            // 關鍵優化：不再強塞大資料回 localStorage，只存輕量設定
             localStorage.setItem('dTypes', JSON.stringify(dTypes));
             localStorage.setItem('sTypes', JSON.stringify(sTypes));
             localStorage.setItem('mTypes', JSON.stringify(mTypes));
-            // 救援完成後立刻刷新畫面上的清單
+            
+            // 直接更新 UI
             renderDList(); renderSList(); renderMList();
           }
           hideLoading();
