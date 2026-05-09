@@ -1467,7 +1467,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.0.8 (資料防彈版) 
+      v2.0.9 (大數據存儲版) 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[ 重新載入 ]</span>
     </div>
   </div>
@@ -1655,9 +1655,30 @@
     function getPri(d) { var p = d && d.priority; return (p && PL[p]) ? p : 'normal'; }
     function todayStr() { var d = new Date(); return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + ('0' + d.getDate()).slice(-2); }
     function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-    function saveD() { localStorage.setItem('defects', JSON.stringify(defects)); syncIDB(); }
-    function saveS() { localStorage.setItem('safetyLogs', JSON.stringify(safetyLogs)); syncIDB(); }
-    function saveM() { localStorage.setItem('matLogs', JSON.stringify(matLogs)); syncIDB(); }
+    function saveD() { 
+      try {
+        localStorage.setItem('defects', JSON.stringify(defects)); 
+        syncIDB(); 
+      } catch (e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+          toast('⚠️ 空間不足！請刪除舊資料或減少照片');
+        } else {
+          toast('❌ 存檔失敗');
+        }
+      }
+    }
+    function saveS() { 
+      try {
+        localStorage.setItem('safetyLogs', JSON.stringify(safetyLogs)); 
+        syncIDB(); 
+      } catch (e) { toast('❌ 工安存檔失敗'); }
+    }
+    function saveM() { 
+      try {
+        localStorage.setItem('matLogs', JSON.stringify(matLogs)); 
+        syncIDB(); 
+      } catch (e) { toast('❌ 材料存檔失敗'); }
+    }
     function saveP() { localStorage.setItem('progLogs', JSON.stringify(progLogs)); syncIDB(); }
     function saveDT() { localStorage.setItem('dTypes', JSON.stringify(dTypes)); syncIDB(); }
     function saveST() { localStorage.setItem('sTypes', JSON.stringify(sTypes)); syncIDB(); }
@@ -1695,7 +1716,7 @@
       img.onload = function () {
         var c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
         var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0);
-        if (!text) { cb(c.toDataURL('image/jpeg', 0.88)); return; }
+        if (!text) { cb(c.toDataURL('image/jpeg', 0.6)); return; }
         var fs = Math.max(16, Math.round(img.width * 0.035)), lines = text.split('\n').filter(Boolean);
         ctx.font = 'bold ' + fs + 'px sans-serif'; ctx.textAlign = 'right';
         var maxW = 0; lines.forEach(function (l) { maxW = Math.max(maxW, ctx.measureText(l).width); });
@@ -1703,7 +1724,7 @@
         ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(x - maxW - pad, y - h + fs * 0.2, maxW + pad * 2, h);
         ctx.fillStyle = '#fff';
         lines.reverse().forEach(function (l, i) { ctx.fillText(l, x, y - (i * fs * 1.2)); });
-        cb(c.toDataURL('image/jpeg', 0.88));
+        cb(c.toDataURL('image/jpeg', 0.6));
       }; img.src = src;
     }
 
