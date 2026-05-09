@@ -1493,7 +1493,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.0.9 (大數據存儲版)
+      v2.1.2 (自動更新版) 
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[
         重新載入 ]</span>
     </div>
@@ -3017,7 +3017,18 @@
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('sw.js');
+        navigator.serviceWorker.register('sw.js').then(function(reg) {
+          reg.onupdatefound = function() {
+            var installingWorker = reg.installing;
+            installingWorker.onstatechange = function() {
+              if (installingWorker.state === 'installed') {
+                if (navigator.serviceWorker.controller) {
+                  toast('✨ 發現新版本！請點擊下方「重新載入」更新');
+                }
+              }
+            };
+          };
+        });
       });
     }
   </script>
