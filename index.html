@@ -1603,9 +1603,15 @@
 
     function syncIDB() {
       if (!db) return;
+      // v3.1.1 寫入前安全檢查：如果記憶體中完全沒資料，不准覆蓋資料庫（除非是剛啟動）
+      if (defects.length === 0 && safetyLogs.length === 0 && matLogs.length === 0 && progLogs.length === 0) {
+        var lastSync = localStorage.getItem('last_sync_ts');
+        if (lastSync && (Date.now() - parseInt(lastSync)) > 30000) return; 
+      }
       try {
         var tx = db.transaction(["backup"], "readwrite");
         tx.objectStore("backup").put({ id: "main_data", defects: defects, safetyLogs: safetyLogs, matLogs: matLogs, progLogs: progLogs, dTypes: dTypes, sTypes: sTypes, mTypes: mTypes, ts: Date.now() });
+        localStorage.setItem('last_sync_ts', Date.now().toString());
       } catch (e) { }
     }
 
@@ -1746,17 +1752,20 @@
     function stamp(src, text, cb) {
       var img = new Image(); img.onerror = function () { cb(src); };
       img.onload = function () {
-        var c = document.createElement('canvas'); c.width = img.width; c.height = img.height;
-        var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0);
-        if (!text) { cb(c.toDataURL('image/jpeg', 0.6)); return; }
-        var fs = Math.max(16, Math.round(img.width * 0.035)), lines = text.split('\n').filter(Boolean);
+        var maxW = 1280; // v3.1.1 強制縮圖，節省 80% 空間
+        var w = img.width, h = img.height;
+        if (w > maxW) { h = Math.round(h * (maxW / w)); w = maxW; }
+        var c = document.createElement('canvas'); c.width = w; c.height = h;
+        var ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+        if (!text) { cb(c.toDataURL('image/jpeg', 0.5)); return; }
+        var fs = Math.max(16, Math.round(w * 0.035)), lines = text.split('\n').filter(Boolean);
         ctx.font = 'bold ' + fs + 'px sans-serif'; ctx.textAlign = 'right';
-        var maxW = 0; lines.forEach(function (l) { maxW = Math.max(maxW, ctx.measureText(l).width); });
-        var pad = fs * 0.5, x = img.width - pad, y = img.height - pad, h = lines.length * fs * 1.2;
-        ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(x - maxW - pad, y - h + fs * 0.2, maxW + pad * 2, h);
+        var tW = 0; lines.forEach(function (l) { tW = Math.max(tW, ctx.measureText(l).width); });
+        var pad = fs * 0.5, x = w - pad, y = h - pad, lh = fs * 1.2;
+        ctx.fillStyle = 'rgba(0,0,0,0.5)'; ctx.fillRect(x - tW - pad, y - (lines.length * lh) + fs * 0.2, tW + pad * 2, lines.length * lh);
         ctx.fillStyle = '#fff';
-        lines.reverse().forEach(function (l, i) { ctx.fillText(l, x, y - (i * fs * 1.2)); });
-        cb(c.toDataURL('image/jpeg', 0.6));
+        lines.reverse().forEach(function (l, i) { ctx.fillText(l, x, y - (i * lh)); });
+        cb(c.toDataURL('image/jpeg', 0.5));
       }; img.src = src;
     }
 
