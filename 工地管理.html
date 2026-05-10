@@ -1501,7 +1501,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v3.1.2 (資料防丟與縮圖版) 
+      v3.2.2 (逐張處理防閃退版) 
       <span id="offline-tag" style="display:none; background:#854F0B; color:#fff; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">離線模式</span>
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[
         重新載入 ]</span>
@@ -1809,27 +1809,29 @@
         p.appendChild(w);
       });
     }
-    function addFiles(files, targetArr, previewId, watermarkText) {
+    async function addFiles(files, targetArr, previewId, watermarkText) {
       if (!files.length) return;
-      toast('📸 照片處理中...');
-      var promises = Array.from(files).map(function (f) {
-        return new Promise(function (resolve) {
+      var total = files.length;
+      for (var i = 0; i < total; i++) {
+        toast('📸 正在處理第 ' + (i + 1) + '/' + total + ' 張...');
+        var f = files[i];
+        var base64 = await new Promise(function (resolve) {
           var r = new FileReader();
-          r.onload = function (e) { 
-            stamp(e.target.result, watermarkText, function(stampedBase64) {
-              var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-              savePh(phId, stampedBase64); // 存入資料庫
-              resolve(phId); // 陣列只存 ID
-            });
-          };
+          r.onload = function (e) { resolve(e.target.result); };
           r.readAsDataURL(f);
         });
-      });
-      Promise.all(promises).then(function (results) {
-        results.forEach(function (id) { targetArr.push(id); });
+        
+        var stampedId = await new Promise(function (resolve) {
+          stamp(base64, watermarkText, function(res) {
+            var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+            savePh(phId, res);
+            resolve(phId);
+          });
+        });
+        targetArr.push(stampedId);
         if (previewId) renderPreview(targetArr, previewId);
-        toast('✅ 照片處理完成');
-      });
+      }
+      toast('✅ 全部照片處理完成');
     }
     function dlBlob(blob, name) { var url = URL.createObjectURL(blob); var a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500); }
 
