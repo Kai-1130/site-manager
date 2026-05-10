@@ -1501,7 +1501,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.3.4 (同步寬容版) 
+      v3.0.0 (記憶體極致優化版) 
       <span id="offline-tag" style="display:none; background:#854F0B; color:#fff; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">離線模式</span>
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[
         重新載入 ]</span>
@@ -1690,10 +1690,10 @@
     function getPri(d) { var p = d && d.priority; return (p && PL[p]) ? p : 'normal'; }
     function todayStr() { var d = new Date(); return d.getFullYear() + '/' + (d.getMonth() + 1) + '/' + ('0' + d.getDate()).slice(-2); }
     function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
-    function saveD() { try { localStorage.setItem('defects', JSON.stringify(defects)); } catch (e) {} syncIDB(); }
-    function saveS() { try { localStorage.setItem('safetyLogs', JSON.stringify(safetyLogs)); } catch (e) {} syncIDB(); }
-    function saveM() { try { localStorage.setItem('matLogs', JSON.stringify(matLogs)); } catch (e) {} syncIDB(); }
-    function saveP() { localStorage.setItem('progLogs', JSON.stringify(progLogs)); syncIDB(); }
+    function saveD() { syncIDB(); }
+    function saveS() { syncIDB(); }
+    function saveM() { syncIDB(); }
+    function saveP() { syncIDB(); }
     function saveDT() { localStorage.setItem('dTypes', JSON.stringify(dTypes)); syncIDB(); }
     function saveST() { localStorage.setItem('sTypes', JSON.stringify(sTypes)); syncIDB(); }
     function saveMT() { localStorage.setItem('mTypes', JSON.stringify(mTypes)); syncIDB(); }
