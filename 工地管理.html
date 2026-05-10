@@ -1537,10 +1537,11 @@
 
       if (!window.indexedDB) { loadLocalData(); hideLoading(); return; }
       try {
-        var req = window.indexedDB.open("SiteManagerDB", 1);
+        var req = window.indexedDB.open("SiteManagerDB", 2);
         req.onupgradeneeded = function (e) {
           var d = e.target.result;
           if (!d.objectStoreNames.contains("backup")) d.createObjectStore("backup", { keyPath: "id" });
+          if (!d.objectStoreNames.contains("photos")) d.createObjectStore("photos", { keyPath: "id" });
         };
         req.onsuccess = function (e) {
           db = e.target.result;
@@ -1603,9 +1604,26 @@
     function syncIDB() {
       if (!db) return;
       try {
-        var tx = db.transaction("backup", "readwrite");
+        var tx = db.transaction(["backup"], "readwrite");
         tx.objectStore("backup").put({ id: "main_data", defects: defects, safetyLogs: safetyLogs, matLogs: matLogs, progLogs: progLogs, dTypes: dTypes, sTypes: sTypes, mTypes: mTypes, ts: Date.now() });
       } catch (e) { }
+    }
+
+    function savePh(id, base64) {
+      if (!db) return;
+      try {
+        var tx = db.transaction("photos", "readwrite");
+        tx.objectStore("photos").put({ id: id, data: base64 });
+      } catch (e) {}
+    }
+    function getPh(id, cb) {
+      if (!db) { cb(null); return; }
+      try {
+        var tx = db.transaction("photos", "readonly");
+        var req = tx.objectStore("photos").get(id);
+        req.onsuccess = function() { cb(req.result ? req.result.data : null); };
+        req.onerror = function() { cb(null); };
+      } catch(e) { cb(null); }
     }
 
     // 資料心跳監聽：防止 iOS 意外清空 localStorage
@@ -1755,8 +1773,22 @@
       arr.forEach(function (s, idx) {
         var w = document.createElement('div');
         w.className = 'photo-thumb';
-        var img = document.createElement('img'); img.src = s;
-        img.addEventListener('click', function () { openLb(arr, idx); });
+        var img = document.createElement('img'); 
+        
+        if (typeof s === 'string' && s.indexOf('ph_') === 0) {
+          img.style.opacity = '0';
+          getPh(s, function(data) { if (data) { img.src = data; img.style.opacity = '1'; } });
+        } else {
+          img.src = s;
+        }
+
+        img.addEventListener('click', function () { 
+          if (typeof s === 'string' && s.indexOf('ph_') === 0) {
+            getPh(s, function(data) { if (data) openLb([data], 0); });
+          } else {
+            openLb(arr, idx); 
+          }
+        });
         w.appendChild(img);
         var db = document.createElement('button'); db.className = 'del-ph'; db.textContent = '×';
         db.addEventListener('click', function (e) {
@@ -1774,12 +1806,18 @@
       var promises = Array.from(files).map(function (f) {
         return new Promise(function (resolve) {
           var r = new FileReader();
-          r.onload = function (e) { resolve(stampAsync(e.target.result, watermarkText)); };
+          r.onload = function (e) { 
+            stamp(e.target.result, watermarkText, function(stampedBase64) {
+              var phId = 'ph_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+              savePh(phId, stampedBase64); // 存入資料庫
+              resolve(phId); // 陣列只存 ID
+            });
+          };
           r.readAsDataURL(f);
         });
       });
       Promise.all(promises).then(function (results) {
-        results.forEach(function (s) { targetArr.push(s); });
+        results.forEach(function (id) { targetArr.push(id); });
         if (previewId) renderPreview(targetArr, previewId);
         toast('✅ 照片處理完成');
       });
@@ -2134,8 +2172,26 @@
       var wrap = document.createElement('div'); wrap.className = 'photo-row';
       photos.forEach(function (p, idx) {
         var pw = document.createElement('div'); pw.className = 'pw';
-        var img = document.createElement('img'); img.src = p;
-        (function (i, arr) { img.addEventListener('click', function () { openLb(arr, i); }); })(idx, photos);
+        var img = document.createElement('img');
+        
+        // v3.1.0 異步加載
+        if (typeof p === 'string' && p.indexOf('ph_') === 0) {
+          img.style.opacity = '0';
+          getPh(p, function(data) { if (data) { img.src = data; img.style.opacity = '1'; } });
+        } else {
+          img.src = p;
+        }
+
+        (function (i, arr, s) { 
+          img.addEventListener('click', function () { 
+            if (typeof s === 'string' && s.indexOf('ph_') === 0) {
+              getPh(s, function(data) { if (data) openLb([data], 0); });
+            } else {
+              openLb(arr, i); 
+            }
+          }); 
+        })(idx, photos, p);
+        
         pw.appendChild(img);
         if (isEd) {
           var db = document.createElement('button'); db.className = 'del-ph'; db.textContent = '×';
