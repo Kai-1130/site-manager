@@ -1501,7 +1501,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v3.2.0 (逐張處理與內存淨化版) 
+      v3.1.2 (資料防丟與縮圖版) 
       <span id="offline-tag" style="display:none; background:#854F0B; color:#fff; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">離線模式</span>
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[
         重新載入 ]</span>
@@ -3106,7 +3106,14 @@
     document.getElementById('btn-reset').addEventListener('click', function () {
       dlg('警告：清空所有資料', '確定要刪除所有缺失、巡檢與驗收記錄嗎？此動作無法復原！', '確定清空', '#C0392B', function () {
         localStorage.clear();
-        location.reload();
+        if (db) {
+          var tx = db.transaction(["backup", "photos"], "readwrite");
+          tx.objectStore("backup").clear();
+          tx.objectStore("photos").clear();
+          tx.oncomplete = function() { location.reload(); };
+        } else {
+          location.reload();
+        }
       });
     });
 
