@@ -1501,7 +1501,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.3.1 (同步穩定版) 
+      v2.3.2 (CORS 破解版) 
       <span id="offline-tag" style="display:none; background:#854F0B; color:#fff; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">離線模式</span>
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[
         重新載入 ]</span>
@@ -2981,9 +2981,8 @@
             }
           };
 
-          // 注意：瀏覽器端直接打 Notion API 可能會遇到 CORS 問題
-          // 這邊使用 proxy 或是提醒使用者
-          var res = await fetch('https://api.notion.com/v1/pages', {
+          // 解決 CORS：使用中轉 Proxy
+          var res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://api.notion.com/v1/pages'), {
             method: 'POST',
             headers: {
               'Authorization': 'Bearer ' + token,
