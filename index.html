@@ -1501,7 +1501,7 @@
       </div>
     </div>
     <div style="text-align: center; font-size: 10px; color: #ccc; padding: 10px 0;">
-      v2.3.3 (同步診斷版) 
+      v2.3.4 (同步寬容版) 
       <span id="offline-tag" style="display:none; background:#854F0B; color:#fff; padding:2px 6px; border-radius:4px; font-size:9px; margin-left:5px;">離線模式</span>
       <span id="force-refresh" style="text-decoration: underline; cursor: pointer; margin-left: 8px; color: #aaa;">[
         重新載入 ]</span>
@@ -2969,16 +2969,17 @@
 
       try {
         for (var d of list) {
+          var props = {
+            "位置": { title: [{ text: { content: d.location } }] }
+          };
+          // 只有當 Notion 欄位存在時才傳送（或直接傳送，由 Notion 報錯時診斷）
+          // 為了極致成功率，我們先傳送標題，其餘欄位放在備註中
+          var combinedDesc = (d.type ? "["+d.type+"] " : "") + (d.desc || "") + "\n狀態: " + (d.status === 'pending' ? '待改善' : '已完成');
+          props["備註"] = { rich_text: [{ text: { content: combinedDesc } }] };
+
           var payload = {
             parent: { database_id: dbid },
-            properties: {
-              "位置": { title: [{ text: { content: d.location } }] },
-              "類型": { select: { name: d.type } },
-              "狀態": { select: { name: d.status === 'pending' ? '待改善' : '驗收完成' } },
-              "優先級": { select: { name: PL[getPri(d)] } },
-              "日期": { rich_text: [{ text: { content: d.createdAt } }] },
-              "備註": { rich_text: [{ text: { content: d.desc || "" } }] }
-            }
+            properties: props
           };
 
           var res = await fetch('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://api.notion.com/v1/pages'), {
